@@ -10,6 +10,9 @@ One very useful aspect of the image class is that annotations
 are kept on a separate layer, as opposed to drawing directly
 onto the image array itself.
 '''
+# The following prevents a bunch of pylint no-member errors
+# with the cv2 module.
+# pylint: disable=E1101
 
 import cv2
 import numpy as np
