@@ -24,7 +24,7 @@ vid.play()  #supports pausing and single-frame advance
 #or you can treat a video as an iterator
 for img in vid:
 	print(vid.current_frame_number)
-	img.show()
+	img.show(highgui=True, delay=25) #25ms delay between frames
 
 ```
 
