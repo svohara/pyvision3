@@ -32,8 +32,8 @@ for img in vid:
 Stephen O'Hara
 
 ## Main Contributors to the original Pyvision
-David Bolme
-Stephen O'Hara
+1. David Bolme
+2. Stephen O'Hara
 
 ## Backwards Compatibility
 Pyvision3 is not (necessarily) designed to be backwards compatible to earlier versions of Python and OpenCV. For those developing with Python 2.7, I suggest continuing to use the original Pyvision code, which can be found on github.
