@@ -36,7 +36,7 @@ class Image(object):
     Supports 1 channel and 3 channel images.
     '''
 
-    def __init__(self, *args, desc="Pyvision Image", **kwargs):
+    def __init__(self, source, *args, desc="Pyvision Image", **kwargs):
         '''
         The constructor wraps a cv2.imread(...) function,
         passing in the args and kwargs appropriately, and
@@ -47,6 +47,12 @@ class Image(object):
         desc: string
             Provide a short description of this image, that will be used
             by default in window titles and other functions
+        source: string, file object, or cv2 image array
+            If string, this is the full path to the image file to load.
+            If file object, this is an open file handle from which to load
+            the image.
+            If ndarray, then we assume this is a cv2 image array which we will
+            just wrap.
         args: variable
             Other args will be passed through to cv2.imread, the first arg
             should be the image source, like a file name. See the cv2 docs
@@ -56,11 +62,30 @@ class Image(object):
 
         Examples
         --------
+        #loading from files
         img = pv3.Image('mypic.jpg')
         img2 = pv3.Image('mypic.jpg', cv2.IMREAD_GRAYSCALE)
+        
+        #loading from a file handle...this example is silly, but
+        # this capability is good for example when loading from a file streamed
+        # over a network connection, or S3, etc.
+        with open('somepath/somefile.png', 'rb') as infile:
+            img3 = pv3.Image(infile)
+        
+        #Wrapping of a numpy/cv2 ndarray
+        img4 = pv3.Image( np.zeros( (480,640), dtype='uint8' ) )
         '''
         self.desc = desc
-        self.data = cv2.imread(*args, **kwargs)
+        if isinstance(source, np.ndarray):
+            self.data = source
+        elif type(source) == str:
+            self.data = cv2.imread(source, *args, **kwargs)
+        else:
+            # assume a file object
+            buf = source.read()
+            x = np.fromstring(buf, dtype='uint8')
+            self.data = cv2.imdecode(x, cv2.IMREAD_UNCHANGED)
+
         self.height, self.width = self.data.shape[0:2]
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
         self.annotation_data = np.zeros((self.height, self.width, 3), dtype='uint8')
