@@ -1,4 +1,4 @@
-'''
+"""
 Created on Dec 18, 2015
 @author: Stephen O'Hara
 
@@ -9,7 +9,7 @@ One very useful aspect of the image class is that annotations
 (such as bounding boxes that might be drawn around detection regions)
 are kept on a separate layer, as opposed to drawing directly
 onto the image array itself.
-'''
+"""
 # The following prevents a bunch of pylint no-member errors
 # with the cv2 module.
 # pylint: disable=E1101
@@ -29,15 +29,16 @@ except ImportError:
     print("Error importing shapely.")
     print("Shapely is required for annotating shapes (polygons) on images.")
 
+
 class Image(object):
-    '''
+    """
     A pyvision3 Image object contains the image data, an
     annotations layer, and many convenient methods.
     Supports 1 channel and 3 channel images.
-    '''
+    """
 
     def __init__(self, source, *args, desc="Pyvision Image", **kwargs):
-        '''
+        """
         The constructor wraps a cv2.imread(...) function,
         passing in the args and kwargs appropriately, and
         then allocating data for the annotations layer.
@@ -74,7 +75,7 @@ class Image(object):
         
         #Wrapping of a numpy/cv2 ndarray
         img4 = pv3.Image( np.zeros( (480,640), dtype='uint8' ) )
-        '''
+        """
         self.desc = desc
         if isinstance(source, np.ndarray):
             self.data = source
@@ -93,7 +94,7 @@ class Image(object):
     def __str__(self):
         txt = "Pyvision3 Image: {}".format(self.desc)
         txt += "\nWidth: {}, Height: {}, Channels: {}, Depth: {}".format(self.width, self.height,
-                                                                    self.nchannels, self.data.dtype)
+                                                                         self.nchannels, self.data.dtype)
         return txt
 
     def __repr__(self):
@@ -103,7 +104,7 @@ class Image(object):
         return self.data[slc]
 
     def as_annotated(self, alpha=0.5):
-        '''
+        """
         Provides an array which represents the merging of the image data
         with the annotations layer.
 
@@ -119,7 +120,8 @@ class Image(object):
         original image is single channel) with the color annotations baked in by
         replacing those pixels in the image with the corresponding non-zero pixels
         in the annotation data.
-        '''
+        :rtype: image ndarray
+        """
         # TODO: What if self.data is a floating point image and the annotations
         # are uint8 BGR? We should probably call a normalizing routine of some
         # sort that copies/converts self.data into a 3-channel BGR 8-bit image
@@ -132,7 +134,7 @@ class Image(object):
         return tmp_img
 
     def annotate_shape(self, shape, color=(255, 0, 0), fill_color=None, *args, **kwargs):
-        '''
+        """
         Draws the specified shape on the annotation data layer.
         Currently supports LineString, MultiLineString, LinearRing,
         and Polygons.
@@ -156,7 +158,7 @@ class Image(object):
         layer will be constructed this way. However, to make it easier for the
         user, colors to be used are specified in the normal (r,g,b) tuple order,
         and internally, we handle it.
-        '''
+        """
         # TODO: annotate_shape should support all shapely geometries
         # TODO: annotations should support alpha-channel fills for partial transparency
         if isinstance(shape, sg.LinearRing) or isinstance(shape, sg.LineString):
@@ -178,14 +180,19 @@ class Image(object):
                 self._draw_segments(interior_ring, color, *args, **kwargs)
 
     def annotate_point(self, point, color=(255, 0, 0)):
-        '''
+        """
         Annotates a point by drawing a filled circle of radius-3 pix in the annotation
         layer.
-        '''
+
+        Parameters
+        ----------
+        point:  tuple (int: x, int: y)
+        color:  tuple (r,g,b)
+        """
         self.annotate_circle(point, 3, color, thickness=-1)
 
     def annotate_circle(self, ctr, radius, color=(255, 0, 0), *args, **kwargs):
-        '''
+        """
         Draws a circle on the annotation layer
 
         Parameters
@@ -201,13 +208,13 @@ class Image(object):
         *args and **kwargs will be passed onto cv2.circle function, and
         can be used to control the thickness and line type. Note that a negative
         thickness indicates that the circle will be filled.
-        '''
+        """
         c = self._fix_color_tuple(color)
         ctr = (int(ctr[0]), int(ctr[1]))
         cv2.circle(self.annotation_data, ctr, radius, c, *args, **kwargs)
 
     def annotate_line(self, pt1, pt2, color, *args, **kwargs):
-        '''
+        """
         Draws a line segment between two points on the annotation layer.
 
         Parameters
@@ -219,43 +226,79 @@ class Image(object):
 
         *args and **kwargs will be passed onto cv2.line, which can be
         used to control line thickness and style
-        '''
+        """
         c = self._fix_color_tuple(color)
         cv2.line(self.annotation_data, pt1, pt2, c, *args, **kwargs)
 
     def annotate_rect(self, pt1, pt2, color=(255, 0, 0), *args, **kwargs):
-        '''
+        """
         Draws a rectangle using upper left (pt1) and lower right (pt2) coordinates.
         To fill the rectangle, specify thickness=-1 in the kwargs.
-        '''
+
+        Parameters
+        ----------
+        pt1, pt2: tuple (int:x, int:y)
+            The upper left and lower right corners of the rectangle
+        color:  tuple (r,g,b)
+            The rgb color of the rectangle
+        *args and **kwargs will be passed onto cv2.rectangle, which can be
+        used to control line thickness and style.
+        """
         c = self._fix_color_tuple(color)
         cv2.rectangle(self.annotation_data, pt1, pt2, color=c, *args, **kwargs)
 
     def annotate_text(self, txt, point, color=(0, 0, 0), bg_color=None,
-                      fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1, *args, **kwargs):
-        '''
+                      font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1, *args, **kwargs):
+        """
         Draws the specified text string to the annotations layer, uses cv2.putText() function
         as the basis, so *args and **kwargs will be passed onto that function.
-        '''
+
+        Parameters
+        ----------
+        txt:    str
+            The text string to be drawn to the image
+        point:  tuple (int: x, int: y)
+            The location of the start of the text string
+        color:  tuple (r,g,b)
+            The color of the text
+        bg_color: tuple (r,g,b) or None
+            Optional. If specified then a filled box of this color will
+            serve as a background for the text. This is handy to ensure
+            text legibility.
+        font_face: cv2 font selection, defaults to cv2.FONT_HERSHEY_PLAIN
+        font_scale: cv2 font Scale, defaults to 1
+
+        *args and **kwargs will be passed onto the underlying cv2.putText
+        function.
+        """
         c = self._fix_color_tuple(color)
         if bg_color is not None:
             # we will draw a filled rectangle of this color to be behind
             # the annotated text
-            ((w, h), _) = cv2.getTextSize(txt, fontFace, fontScale, thickness=1)
+            ((w, h), _) = cv2.getTextSize(txt, font_face, font_scale, thickness=1)
             point1 = (point[0] - 1, point[1] + 1)
             point2 = (point1[0] + w + 2, point1[1] - h - 2)
             self.annotate_rect(point1, point2, color=bg_color, thickness=-1)
 
-        cv2.putText(self.annotation_data, txt, point, fontFace=fontFace,
-                    fontScale=fontScale, color=c, *args, **kwargs)
+        cv2.putText(self.annotation_data, txt, point, fontFace=font_face,
+                    fontScale=font_scale, color=c, *args, **kwargs)
 
     def _draw_segments(self, simple_shape, color, *args, **kwargs):
-        '''
+        """
         Internal method for drawing a "simple" shapely geometric object,
         i.e., one that has a single set of coordinates which will be
         connected in sequence. Examples are LineStrings and LinearRings,
         the latter being a closed sequence of points and the former is not.
-        '''
+
+        Parameters
+        ----------
+        simple_shape:   shape
+            A shape object that provides a coords member
+        color:  tuple (r,g,b)
+        *args, **kwargs:
+            will be passed on to self.annotate_line for each
+            line segment in the simple shape.
+        """
         points = [(int(x), int(y)) for (x, y) in simple_shape.coords]
         for i in range(1, len(points)):
             pt1 = points[i - 1]
@@ -263,11 +306,19 @@ class Image(object):
             self.annotate_line(pt1, pt2, color, *args, **kwargs)
 
     def _fix_color_tuple(self, color):
-        '''
+        """
         Puts the color tuple (r,g,b) into (b,g,r) order. Replaces any zeros with ones,
         because the way we composite the annotation layer onto the image only looks for
         non-zero values.
-        '''
+
+        Parameters
+        ----------
+        color:  tuple (r,g,b)
+
+        Returns
+        -------
+        tuple (b,g,r) where the minimum for each channel is set to 1 instead of 0
+        """
         (r, g, b) = color
         r = 1 if r == 0 else r
         g = 1 if g == 0 else g
@@ -276,7 +327,7 @@ class Image(object):
 
     def show(self, window_title=None, highgui=False, annotations=True, annotations_opacity=0.5,
              delay=0, pos=None):
-        '''
+        """
         Displays this image in a highgui or matplotlib window.
 
         Parameters
@@ -302,12 +353,12 @@ class Image(object):
             Used if showing via highgui, this is the window's upper left position on
             the user's screen. Default is None, which means the window will be placed
             automatically.
-        '''
+        """
         if not window_title:
             window_title = self.desc
 
         img_array = self.as_annotated(alpha=annotations_opacity) if annotations \
-                    else self.data.copy()
+            else self.data.copy()
         # optional resize logic here?
 
         if highgui:
@@ -339,7 +390,7 @@ class Image(object):
             plot.show(block=False)
 
     def save(self, filename, *args, as_annotated=True, **kwargs):
-        '''
+        """
         Saves the image data (or the annotated image data) to a file.
         This wraps cv2.imwrite function.
 
@@ -350,6 +401,6 @@ class Image(object):
         as_annotated: Boolean
             If True (default) then the annotated version of the image will be saved.
         All other args and kwargs are passed on to cv2.imwrite
-        '''
+        """
         img_array = self.as_annotated() if as_annotated else self.data
         cv2.imwrite(filename, img_array, *args, **kwargs)

@@ -1,4 +1,4 @@
-'''
+"""
 Created on Dec 21, 2015
 @author: Stephen O'Hara
 
@@ -18,33 +18,39 @@ files, rtsp streams, directories of images (played as a video)
 user to specify functions that operate on each new frame of the
 video stream, which can be used to easily build real-time video
 analysis pipelines.
-'''
+"""
 # The following prevents a bunch of pylint no-member errors
 # with the cv2 module.
 # pylint: disable=E1101
 
 import cv2
-import os
 
 import pyvision as pv3
 
 class Video(object):
-    '''
+    """
     A Pyvision Video object makes using and interacting with video
     streams easier than 'raw' opencv code. A pyvision video object
     is an interable (i.e., for img in vid: ....), and also provides
     a high level "play" method, which plays-back the video, displays
     the frame number as an annotation, and supports a callback function
     to perform per-frame tasks.
-    '''
+    """
 
     def __init__(self, video_source):
-        '''
+        """
         Constructor.
         Input is the video source, which is anything that cv2.VideoCapture
         can take, such as a video file, a webcam number, or an rtsp stream
         URI.
-        '''
+
+        Parameters
+        ----------
+        video_source:   variable
+            The video source may be the path of a video file, a webcam
+            number, an rtsp stream URI, or anything else accepted by the
+            cv2.VideoCapture object.
+        """
         self.source = video_source
         self.cap = cv2.VideoCapture(video_source)
         self.current_frame_num = 0
@@ -60,7 +66,7 @@ class Video(object):
         return self.__next__()
 
     def __next__(self):
-        '''
+        """
         We wrap the read method of the video capture object for a few reasons.
         1. Adhere to python iterator interface
         2. Encapsulate some helpful error handling
@@ -72,7 +78,7 @@ class Video(object):
         for img in vid:
             print(vid.current_frame_num)
             img.show(highgui=True, delay=25)        
-        '''
+        """
         if self.cap.isOpened():
             (ok_flag, img) = self.cap.read()
         else:
@@ -88,12 +94,11 @@ class Video(object):
                 raise ValueError("Error: Video source can't be read. VideoCapture retrieve failed.")
             else:
                 raise StopIteration
-        return None
 
     def play(self, window="Pyvision Video", pos=None, delay=20,
              annotate=True, image_buffer=None, start_frame=0, end_frame=None,
              on_new_frame=None, **kwargs):
-        '''
+        """
         Plays the video, calling the on_new_frame function after loading each
          frame from the video. The user may interrupt video playback by
          hitting (sometimes repeatedly) the spacebar, upon which they are
@@ -144,12 +149,12 @@ class Video(object):
         -------
         The final frame number of the video, or the frame number at which the user terminated
         playback using the 'q'uit option.
-        '''
+        """
         vid = self
         if delay == 0:
-            delay_obj = {'wait_time':20, 'current_state':'PAUSED'}
+            delay_obj = {'wait_time': 20, 'current_state': 'PAUSED'}
         else:
-            delay_obj = {'wait_time':delay, 'current_state':'PLAYING'}
+            delay_obj = {'wait_time': delay, 'current_state': 'PLAYING'}
         key = ''
         for img in vid:
             if self.current_frame_num == 0 and start_frame > 0:
@@ -160,13 +165,13 @@ class Video(object):
             if end_frame is not None and self.current_frame_num > end_frame:
                 break
 
-            if image_buffer != None:
+            if image_buffer is not None:
                 image_buffer.add(img)
 
             if annotate:
                 txt = "Frame: {}".format(self.current_frame_num)
                 img.annotate_text(txt, (10, 10), color=(255, 255, 255), bg_color=(0, 0, 0),
-                      fontFace=cv2.FONT_HERSHEY_PLAIN, fontScale=1)
+                      font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1)
 
             if window != None:
                 img.show(window_title=window, highgui=True, pos=pos, delay=1, annotations_opacity=1.0)
@@ -184,8 +189,8 @@ class Video(object):
 
         return self.current_frame_num
 
-    def _pause_and_play(self, delay_obj={'wait_time':20, 'current_state':'PLAYING'}):
-        '''
+    def _pause_and_play(self, delay_obj={'wait_time': 20, 'current_state': 'PLAYING'}):
+        """
         This function is intended to be used in the play back loop of a video.
         It allows the user to interrupt the play back to pause the video, to
         step through it one frame at a time, and to register other keys/commands
@@ -193,7 +198,10 @@ class Video(object):
         @param delay_obj: The "delay object", which is just a dictionary that
         specifies the wait_time (the delay in ms between frames), and
         the current_state of either 'PLAYING' or 'PAUSED'
-        '''
+
+        NOTE: We are intentionally using a mutable default argument in this
+        function.
+        """
         state = delay_obj['current_state']
         wait = delay_obj['wait_time']
         # print state, wait
@@ -206,16 +214,16 @@ class Video(object):
             wait = 0
 
         c = cv2.waitKey(wait)
-        c = c & 127  # bit mask to get only lower 8 bits
+        c &= 127  # bit mask to get only lower 8 bits
 
         # sometimes a person has to hold down the spacebar to get the input
         # recognized by the cv.WaitKey() within the short time limit. So
         # we need to 'soak up' these extra inputs when the user is still
-        # holding the spacebar, but we've gotten into the pause state.
+        # holding the space bar, but we've gotten into the pause state.
         while c == ord(' '):
             print("PAUSED: {}".format(menu_str))
             c = cv2.waitKey(0)
-            c = c & 127  # bit mask to get only lower 8 bits
+            c &= 127  # bit mask to get only lower 8 bits
 
         # At this point, we have a non-spacebar input, so process it.
         if c == ord('a'):  # abort
@@ -232,8 +240,4 @@ class Video(object):
         else:  # any other keyboard input is just returned
             # delay_obj['current_state'] = "PAUSED"
             return chr(c)
-
-
-
-
 

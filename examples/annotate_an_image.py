@@ -1,15 +1,15 @@
-'''
+"""
 Created on Dec 20, 2015
 
 @author: sohara
-'''
+"""
 import shapely.geometry as sg
 import pyvision as pv3
 
 def annotation_demo():
-    '''
+    """
     Demonstrates several annotation methods of the Image class
-    '''
+    """
     img = pv3.Image(pv3.IMG_DRIVEWAY, desc="Annotations Demo")  # load a sample image
 
     # annotate a point as a small filled circle
