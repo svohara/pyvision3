@@ -1,9 +1,27 @@
 # pyvision3
 A computer vision library that complements OpenCV 3.x to add many useful features for developers and scientists alike. Pyvision3 is intended to be a successor to Pyvision that takes advantage of OpenCV 3.x and Python 3.x features. Huge thanks to David Bolme for being the originator of Pyvision. Many of the ease-of-use and interface ideas from the original Pyvision are carried forward, albeit with new implementations for Pyvision3.
 
+## Installation
+Install prerequisites:
+
+* python 3.4
+* numpy
+* opencv 3.x with bindings for python 3.4
+* matplotlib (optional, recommended)
+* shapely (optional, annotating polygons)
+
+In the root directory of the pyvision code (the directory containing the setup.py script), run the following to install to the system packages:
+
+    python setup.py install
+
+Or the following to install only for the current user:
+
+    python setup.py install --user
+
 ## Examples
 
 ```python
+
 import pyvision as pv3
 
 #load and display an image
