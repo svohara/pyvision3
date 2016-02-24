@@ -16,6 +16,8 @@ onto the image array itself.
 
 import cv2
 import numpy as np
+import shapely.geometry as sg
+
 
 try:
     import matplotlib.pyplot as plot
@@ -88,6 +90,7 @@ class Image(object):
             self.data = cv2.imdecode(x, cv2.IMREAD_UNCHANGED)
 
         self.height, self.width = self.data.shape[0:2]
+        self.size = (self.width, self.height)
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
         self.annotation_data = np.zeros((self.height, self.width, 3), dtype='uint8')
 
@@ -103,16 +106,21 @@ class Image(object):
     def __getitem__(self, slc):
         return self.data[slc]
 
-    def as_annotated(self, alpha=0.5):
+    def as_annotated(self, alpha=0.5, as_type="CV"):
         """
         Provides an array which represents the merging of the image data
         with the annotations layer.
 
         Parameters
         ----------
-        alpha: float between 0.0 and 1.0
+        alpha: float
+            Specify a number between 0.0 and 1.0
             This is the alpha blend when merging the annotations layer onto the image data.
             1.0 means that the annotation will be completely opaque and 0.0 completely transparent.
+        as_type: string
+            Specify either "CV" (default) or "PV" to indicate the return type of the annotated
+            image. If "CV", then an ndarray in the normal opencv format is returned.
+            If "PV", then a new pyvision image is returned with the annotations baked-in.
 
         Returns
         -------
@@ -120,7 +128,9 @@ class Image(object):
         original image is single channel) with the color annotations baked in by
         replacing those pixels in the image with the corresponding non-zero pixels
         in the annotation data.
-        :rtype: image ndarray
+
+        Return type is either an opencv ndarray (default) or a pyvision image
+        if as_type == "PV"
         """
         # TODO: What if self.data is a floating point image and the annotations
         # are uint8 BGR? We should probably call a normalizing routine of some
@@ -131,6 +141,10 @@ class Image(object):
         else:
             tmp_img = self.data.copy()
         tmp_img[mask] = alpha * self.annotation_data[mask] + (1 - alpha) * tmp_img[mask]
+
+        if as_type == "PV":
+            return Image(tmp_img)
+
         return tmp_img
 
     def annotate_shape(self, shape, color=(255, 0, 0), fill_color=None, *args, **kwargs):
@@ -186,10 +200,12 @@ class Image(object):
 
         Parameters
         ----------
-        point:  tuple (int: x, int: y)
+        point:  tuple (int: x, int: y) or shapely Point object
         color:  tuple (r,g,b)
         """
-        self.annotate_circle(point, 3, color, thickness=-1)
+        pt = (int(point.x), int(point.y)) if isinstance(point, sg.point.Point) else point
+
+        self.annotate_circle(pt, 3, color, thickness=-1)
 
     def annotate_circle(self, ctr, radius, color=(255, 0, 0), *args, **kwargs):
         """
@@ -243,6 +259,11 @@ class Image(object):
             The rgb color of the rectangle
         *args and **kwargs will be passed onto cv2.rectangle, which can be
         used to control line thickness and style.
+
+        Note
+        ----
+        If your rectangle is a shapely Polygon (which it will be if you use
+        pv3.Rect(...) to create it), then use the annotate_shape method instead.
         """
         c = self._fix_color_tuple(color)
         cv2.rectangle(self.annotation_data, pt1, pt2, color=c, *args, **kwargs)
@@ -324,6 +345,41 @@ class Image(object):
         g = 1 if g == 0 else g
         b = 1 if b == 0 else b
         return (b, g, r)
+
+    def resize(self, new_size, keep_aspect=False):
+        """
+        Returns a copy of the image after resizing to a new size.
+
+        Parameters
+        ----------
+        new_size: tuple (width, height)
+        keep_aspect: boolean
+            If True, then the resizing will preserve the original image's aspect
+            ratio, which may require borders "letterboxing" to be introduced.
+            Default is False.
+
+        Returns
+        -------
+        An opnecv ndarray representing the resized image
+        """
+        if keep_aspect:
+            # Find the scale
+            w, h = self.size  # current size
+
+            scale = min(new_size[0] / w, new_size[1] / h)
+            w = int(scale * w)
+            h = int(scale * h)
+
+            # Create new image with resized tmp image centered
+            tmp = cv2.resize(self.data, (w, h))
+            new = np.zeros((new_size[1], new_size[0], self.nchannels), dtype=tmp.dtype)
+            x = (new_size[0] - w) // 2
+            y = (new_size[1] - h) // 2
+            new[y:(y+h), x:(x+w), :] = tmp
+        else:
+            new = cv2.resize(self.data, new_size)
+
+        return new
 
     def show(self, window_title=None, highgui=False, annotations=True, annotations_opacity=0.5,
              delay=0, pos=None):

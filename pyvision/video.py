@@ -27,6 +27,7 @@ import cv2
 
 import pyvision as pv3
 
+
 class Video(object):
     """
     A Pyvision Video object makes using and interacting with video
