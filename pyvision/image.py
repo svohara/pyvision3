@@ -346,7 +346,7 @@ class Image(object):
         b = 1 if b == 0 else b
         return (b, g, r)
 
-    def resize(self, new_size, keep_aspect=False):
+    def resize(self, new_size, keep_aspect=False, as_type="CV"):
         """
         Returns a copy of the image after resizing to a new size.
 
@@ -357,10 +357,14 @@ class Image(object):
             If True, then the resizing will preserve the original image's aspect
             ratio, which may require borders "letterboxing" to be introduced.
             Default is False.
+        as_type: str in ("CV","PV")
+            If as_type is "CV" (default), then the returned image is an opencv
+            format ndarray. If "PV", then a pyvision image is returned.
 
         Returns
         -------
-        An opnecv ndarray representing the resized image
+        An opnecv ndarray representing the resized image by default, or a pyvision
+        image if as_type == "PV"
         """
         if keep_aspect:
             # Find the scale
@@ -379,7 +383,10 @@ class Image(object):
         else:
             new = cv2.resize(self.data, new_size)
 
-        return new
+        if as_type == "PV":
+            return Image(new)
+        else:
+            return new
 
     def show(self, window_title=None, highgui=False, annotations=True, annotations_opacity=0.5,
              delay=0, pos=None):

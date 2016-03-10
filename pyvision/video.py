@@ -24,41 +24,20 @@ analysis pipelines.
 # pylint: disable=E1101
 
 import cv2
-
 import pyvision as pv3
+import numpy as np
 
 
-class Video(object):
+class VideoInterface(object):
     """
-    A Pyvision Video object makes using and interacting with video
-    streams easier than 'raw' opencv code. A pyvision video object
-    is an interable (i.e., for img in vid: ....), and also provides
-    a high level "play" method, which plays-back the video, displays
-    the frame number as an annotation, and supports a callback function
-    to perform per-frame tasks.
+    The common functions required by any object implementing
+    the pyvision Video interface, and implements the common pause-and-play
+    feature of Videos.
     """
-
-    def __init__(self, video_source):
-        """
-        Constructor.
-        Input is the video source, which is anything that cv2.VideoCapture
-        can take, such as a video file, a webcam number, or an rtsp stream
-        URI.
-
-        Parameters
-        ----------
-        video_source:   variable
-            The video source may be the path of a video file, a webcam
-            number, an rtsp stream URI, or anything else accepted by the
-            cv2.VideoCapture object.
-        """
-        self.source = video_source
-        self.cap = cv2.VideoCapture(video_source)
+    def __init__(self, size=None):
         self.current_frame_num = 0
         self.current_frame = None
-
-    def __del__(self):
-        self.cap.release()
+        self.size = size
 
     def __iter__(self):
         return self
@@ -67,34 +46,21 @@ class Video(object):
         return self.__next__()
 
     def __next__(self):
-        """
-        We wrap the read method of the video capture object for a few reasons.
-        1. Adhere to python iterator interface
-        2. Encapsulate some helpful error handling
-        3. Maintain state variables: self.current_frame and self.current_fram_num
-        
-        Example usage
-        -------------
-        vid = pv3.Video("path/to/some/video.avi")
-        for img in vid:
-            print(vid.current_frame_num)
-            img.show(highgui=True, delay=25)        
-        """
-        if self.cap.isOpened():
-            (ok_flag, img) = self.cap.read()
-        else:
-            raise ValueError("Error: VideoCapture object has been closed.")
+        raise NotImplementedError
 
-        if ok_flag:
-            self.current_frame_num += 1
-            self.current_frame = pv3.Image(img)
+    def _get_resized(self):
+        if self.size is None:
             return self.current_frame
         else:
-            if self.current_frame_num == 0:
-                # something is wrong with the video source
-                raise ValueError("Error: Video source can't be read. VideoCapture retrieve failed.")
-            else:
-                raise StopIteration
+            return self.current_frame.resize(self.size, keep_aspect=False, as_type="PV")
+
+    def _reset(self):
+        """
+        Reset the video to the start / reinitialize as required so that it can
+        be iterated over again.
+        """
+        self.current_frame_num = 0
+        self.current_frame = None
 
     def play(self, window="Pyvision Video", pos=None, delay=20,
              annotate=True, image_buffer=None, start_frame=0, end_frame=None,
@@ -172,12 +138,12 @@ class Video(object):
             if annotate:
                 txt = "Frame: {}".format(self.current_frame_num)
                 img.annotate_text(txt, (10, 10), color=(255, 255, 255), bg_color=(0, 0, 0),
-                      font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1)
+                                  font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1)
 
-            if window != None:
+            if window is not None:
                 img.show(window_title=window, highgui=True, pos=pos, delay=1, annotations_opacity=1.0)
 
-            if on_new_frame != None:
+            if on_new_frame is not None:
                 on_new_frame(img, self.current_frame_num, key=key,
                              image_buffer=image_buffer, **kwargs)
 
@@ -242,3 +208,142 @@ class Video(object):
             # delay_obj['current_state'] = "PAUSED"
             return chr(c)
 
+
+class Video(VideoInterface):
+    """
+    A Pyvision Video object makes using and interacting with video
+    streams easier than 'raw' opencv code. A pyvision video object
+    is an interable (i.e., for img in vid: ....), and also provides
+    a high level "play" method, which plays-back the video, displays
+    the frame number as an annotation, and supports a callback function
+    to perform per-frame tasks.
+    """
+
+    def __init__(self, video_source, size=None):
+        """
+        Constructor.
+        Input is the video source, which is anything that cv2.VideoCapture
+        can take, such as a video file, a webcam number, or an rtsp stream
+        URI.
+
+        Parameters
+        ----------
+        video_source:   variable
+            The video source may be the path of a video file, a webcam
+            number, an rtsp stream URI, or anything else accepted by the
+            cv2.VideoCapture object.
+        size: tuple (w,h)
+            Optional. Used to specify the size of the output. This will
+            force each frame of the video source to be resized appropriately.
+            Specify None to return the native size of the video source.
+        """
+        VideoInterface.__init__(self, size=size)
+        self.source = video_source
+        self.cap = cv2.VideoCapture(video_source)
+
+    def __del__(self):
+        self.cap.release()
+
+    def _reset(self):
+        VideoInterface._reset(self)
+        self.cap.release()
+        self.cap = cv2.VideoCapture(self.source)
+
+    def __next__(self):
+        """
+        We wrap the read method of the video capture object for a few reasons.
+        1. Adhere to python iterator interface
+        2. Encapsulate some helpful error handling
+        3. Maintain state variables: self.current_frame and self.current_frame_num
+        
+        Example usage
+        -------------
+        vid = pv3.Video("path/to/some/video.avi")
+        for img in vid:
+            print(vid.current_frame_num)
+            img.show(highgui=True, delay=25)        
+        """
+        if self.cap.isOpened():
+            (ok_flag, img) = self.cap.read()
+        else:
+            raise ValueError("Error: VideoCapture object has been closed.")
+
+        if ok_flag:
+            self.current_frame_num += 1
+            self.current_frame = pv3.Image(img)
+        else:
+            if self.current_frame_num == 0:
+                # something is wrong with the video source
+                raise ValueError("Error: Video source can't be read. VideoCapture retrieve failed.")
+            else:
+                raise StopIteration
+
+        return self._get_resized()
+
+
+class VideoFromFileList(VideoInterface):
+    """
+    Given a sorted list of filenames (including full path), this will
+    treat the list as a video sequence.
+    """
+    def __init__(self, filelist, size=None):
+        """
+        Parameters
+        ----------
+        filelist: list[str]
+            a list of full file paths to the images that comprise the video.
+            They must be files capable of being loaded into a pv.Image() object, and should
+            be in sorted order for playback.
+        size: tuple (w,h)
+            Optional tuple to indicate the desired playback window size.
+        """
+        VideoInterface.__init__(self, size=size)
+        self.filelist = filelist
+        self.num_frames = len(filelist)
+
+    def __next__(self):
+        """
+        For iterating the frames in the video sequence
+        """
+        if self.current_frame_num >= self.num_frames:
+            raise StopIteration
+
+        frame = self.filelist[self.current_frame_num]
+        self.current_frame = pv3.Image(frame)
+        self.current_frame_num += 1
+
+        return self._get_resized()
+
+
+class VideoFromImageStack(VideoInterface):
+    """
+    This class allows the user to treat a stack of grayscale images in a 3D numpy array as a video.
+    We assume that the dimensions of the array are ordered as (frame #, width, height)
+    """
+    def __init__(self, image_stack, size=None):
+        """
+        Parameters
+        ----------
+        image_stack: numpy ndarray (frames, width, height)
+            A numpy 3D ndarray that represents the image stack. Should be of dimensions (frames,width,height).
+            Each image in the stack is single-channel (gray), so slicing stack[idx, :, :] gets the gray-scale
+            image ndarray at position idx.
+        size: tuple (w,h)
+            the optional width,height to resize the input frames
+        """
+        VideoInterface.__init__(self, size=size)
+        self.image_stack = image_stack
+        self.num_frames = image_stack.shape[0]
+
+    def __next__(self):
+        """
+        For iterating the frames in the video sequence
+        """
+        if self.current_frame_num >= self.num_frames:
+            raise StopIteration
+
+        frame = self.image_stack[self.current_frame_num, :, :]
+        self.current_frame = pv3.Image(frame)
+        self.current_frame_num += 1
+
+        return self._get_resized()
