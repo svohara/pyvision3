@@ -30,7 +30,8 @@ img.show()
 
 #annotate the image
 img.annotate_text("Waldo was here", (254, 246), color=(0, 0, 255), bg_color=(255, 255, 255))
-img.show()
+img.show()  # by default uses an opencv highgui window for display
+img.imshow()  # will use a matplotlib figure, optional arguments are the same as img.show()
 
 #annotations are on a separate layer, original data is still there
 img.show(annotations=False)
@@ -39,10 +40,13 @@ img.show(annotations=False)
 vid = pv3.Video("path/to/somevideo.mov")
 vid.play()  #supports pausing and single-frame advance
 
+#We can control the position of playback in the video
+vid.play(start_frame=150, end_frame=400)
+
 #or you can treat a video as an iterator
 for img in vid:
 	print(vid.current_frame_number)
-	img.show(highgui=True, delay=25) #25ms delay between frames
+	img.show(delay=25) #25ms delay between frames
 
 ```
 

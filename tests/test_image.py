@@ -5,6 +5,7 @@ import numpy as np
 
 class TestImage(TestCase):
     def test_resize(self):
+        print("\nTest Image 'resize' Method")
         img = pv3.Image(pv3.IMG_PRIUS)
         img_thumb = img.resize((64, 64), keep_aspect=True)
 

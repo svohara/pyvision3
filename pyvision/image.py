@@ -388,7 +388,21 @@ class Image(object):
         else:
             return new
 
-    def show(self, window_title=None, highgui=False, annotations=True, annotations_opacity=0.5,
+    def imshow(self, **kwargs):
+        """
+        Displays this image in a matplotlib figure. The same as calling img.show() method
+        with highgui=False.
+
+        Parameters
+        ----------
+        kwargs: key word arguments are the same as used in the show method.
+        """
+        if kwargs is None:
+            kwargs = {}
+        kwargs.update({"highgui": False})
+        self.show(**kwargs)
+
+    def show(self, window_title=None, highgui=True, annotations=True, annotations_opacity=0.5,
              delay=0, pos=None):
         """
         Displays this image in a highgui or matplotlib window.

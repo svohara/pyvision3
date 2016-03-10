@@ -26,6 +26,7 @@ analysis pipelines.
 import cv2
 import pyvision as pv3
 import numpy as np
+import sys
 
 
 class VideoInterface(object):
@@ -39,8 +40,48 @@ class VideoInterface(object):
         self.current_frame = None
         self.size = size
 
+        # Set the following to true when creating a subclass if it
+        # supports random access to the frames without seeking. In which
+        # case, you must also implement the __getitem__ magic method.
+        self._random_access = False
+
     def __iter__(self):
         return self
+
+    def seek_to(self, frame_num):
+        """
+        Set the video to the desired frame number and return the frame. Subsequent
+        calls to next() will start from this position. If the Video class supports
+        random access, this is very fast. Otherwise, a video may have to seek to
+        the desired position, which is likely slow.
+
+        Parameters
+        ----------
+        frame_num: int
+            The frame number to seek/go to and return.
+
+        Returns
+        -------
+        The pyvision image at the desired frame number.
+        """
+        cue_flag = True
+        if self._random_access:
+            self.current_frame_num = frame_num
+            self.current_frame = self[frame_num]
+        else:
+            if cue_flag:
+                print("Cueing video to desired position. Please wait.")
+                sys.stdout.flush()
+                cue_flag = False
+
+            # Handle the case if the current frame number is beyond the desired position
+            if self.current_frame_num > frame_num:
+                self._reset()
+
+            while self.current_frame_num < frame_num:
+                _ = self.next()
+
+        return self._get_resized()
 
     def next(self):  # python 2 compatiblity
         return self.__next__()
@@ -63,7 +104,7 @@ class VideoInterface(object):
         self.current_frame = None
 
     def play(self, window="Pyvision Video", pos=None, delay=20,
-             annotate=True, image_buffer=None, start_frame=0, end_frame=None,
+             annotate=True, image_buffer=None, start_frame=None, end_frame=None,
              on_new_frame=None, **kwargs):
         """
         Plays the video, calling the on_new_frame function after loading each
@@ -97,11 +138,12 @@ class VideoInterface(object):
             subtraction, for example. The buffer contents is directly modified each
             time a new image is captured from the video, and a reference to the buffer
             is passed to the on_new_frame function (defined below).
-        start_frame: int
-             If > 0, then the video will cue itself by quickly fast-forwarding
-            to the desired start frame before any images are shown. During the cueing process,
-            any on_new_frame function callbacks will NOT be activated.
-        end_frame: int
+        start_frame: int or None
+             If >= 0, then the video will cue itself by seeking to the desired start frame before
+             any images are shown. During the cueing process, any on_new_frame function callbacks
+             will NOT be activated. If None, the video will play from whatever it's current
+             position/state is.
+        end_frame: int or None
              If not None, then the playback will end after this frame has
             been processed.
         on_new_frame: function or callable object
@@ -117,18 +159,17 @@ class VideoInterface(object):
         The final frame number of the video, or the frame number at which the user terminated
         playback using the 'q'uit option.
         """
-        vid = self
         if delay == 0:
             delay_obj = {'wait_time': 20, 'current_state': 'PAUSED'}
         else:
             delay_obj = {'wait_time': delay, 'current_state': 'PLAYING'}
         key = ''
-        for img in vid:
-            if self.current_frame_num == 0 and start_frame > 0:
-                print("Cueing video to start at {}".format(start_frame))
 
-            if self.current_frame_num < start_frame:
-                continue
+        if start_frame is not None:
+            self.seek_to(start_frame)
+
+        for img in self:
+
             if end_frame is not None and self.current_frame_num > end_frame:
                 break
 
@@ -300,6 +341,11 @@ class VideoFromFileList(VideoInterface):
         VideoInterface.__init__(self, size=size)
         self.filelist = filelist
         self.num_frames = len(filelist)
+        self._random_access = True
+
+    def __getitem__(self, frame_num):
+        frame = self.filelist[frame_num]
+        return pv3.Image(frame)
 
     def __next__(self):
         """
@@ -334,6 +380,11 @@ class VideoFromImageStack(VideoInterface):
         VideoInterface.__init__(self, size=size)
         self.image_stack = image_stack
         self.num_frames = image_stack.shape[0]
+        self._random_access = True
+
+    def __getitem__(self, frame_num):
+        frame = self.image_stack[frame_num, :, :]
+        return pv3.Image(frame)
 
     def __next__(self):
         """
