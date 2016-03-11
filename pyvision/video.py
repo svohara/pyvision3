@@ -25,7 +25,6 @@ analysis pipelines.
 
 import cv2
 import pyvision as pv3
-import numpy as np
 import sys
 
 
@@ -64,26 +63,22 @@ class VideoInterface(object):
         -------
         The pyvision image at the desired frame number.
         """
-        cue_flag = True
         if self._random_access:
             self.current_frame_num = frame_num
             self.current_frame = self[frame_num]
         else:
-            if cue_flag:
-                print("Cueing video to desired position. Please wait.")
-                sys.stdout.flush()
-                cue_flag = False
-
-            # Handle the case if the current frame number is beyond the desired position
             if self.current_frame_num > frame_num:
-                self._reset()
+                self.reset()
 
+            if frame_num > 0:
+                print("Seeking video to desired position...")
+                sys.stdout.flush()
             while self.current_frame_num < frame_num:
                 _ = self.next()
 
         return self._get_resized()
 
-    def next(self):  # python 2 compatiblity
+    def next(self):  # python 2 compatibility
         return self.__next__()
 
     def __next__(self):
@@ -95,7 +90,7 @@ class VideoInterface(object):
         else:
             return self.current_frame.resize(self.size, keep_aspect=False, as_type="PV")
 
-    def _reset(self):
+    def reset(self):
         """
         Reset the video to the start / reinitialize as required so that it can
         be iterated over again.
@@ -285,8 +280,8 @@ class Video(VideoInterface):
     def __del__(self):
         self.cap.release()
 
-    def _reset(self):
-        VideoInterface._reset(self)
+    def reset(self):
+        VideoInterface.reset(self)
         self.cap.release()
         self.cap = cv2.VideoCapture(self.source)
 

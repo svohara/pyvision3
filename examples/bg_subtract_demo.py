@@ -19,7 +19,7 @@ def demo():
 
     # Median Model
     ib = pv3.ImageBuffer(N=400)  # median stats are better with many samples
-    vid._reset()
+    vid.reset()
     ib.fill(vid)
     bg = pv3.MedianModel(ib, thresh=80, soft_thresh=False)
     md_mask = bg.foreground_mask()
