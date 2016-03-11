@@ -136,7 +136,7 @@ class ImageMontage(object):
         """
         return pv3.Image(self._cvMontageImage)
 
-    def show(self, window="Image Montage", pos=None, delay=0):
+    def show(self, window_title="Image Montage", pos=None, delay=0):
         """
         Will display the montage image, as well as register the mouse handling callback
         function so that the user can scroll the montage by clicking the increment/decrement
@@ -144,7 +144,7 @@ class ImageMontage(object):
 
         Parameters
         ----------
-        window: str
+        window_title: str
             The window title to use
         pos: tuple
             The window position on the user's screen (x,y)
@@ -157,9 +157,9 @@ class ImageMontage(object):
         The key code of the key pressed, if any, that dismissed the window.
         """
         img = self.as_image()
-        cv2.namedWindow(window)
-        cv2.setMouseCallback(window, self._clickHandler.onClick, window)
-        key = img.show(window_title=window, highgui=True, pos=pos, delay=delay)
+        cv2.namedWindow(window_title)
+        cv2.setMouseCallback(window_title, self._clickHandler.onClick, window_title)
+        key = img.show(window_title=window_title, highgui=True, pos=pos, delay=delay)
         return key
 
     def set_select_handler(self, handler):
@@ -340,7 +340,7 @@ class ImageMontage(object):
             cvTileBGR = cvTile
 
         # copy pixels of tile onto appropriate location in montage image
-        (minx, miny, maxx, maxy) = roi.bounds
+        (minx, miny, maxx, maxy) = np.array(roi.bounds, dtype='int')
         cvImg[miny:maxy, minx:maxx, :] = cvTileBGR
 
         if self._labels == 'index':

@@ -16,8 +16,6 @@ onto the image array itself.
 
 import cv2
 import numpy as np
-import shapely.geometry as sg
-
 
 try:
     import matplotlib.pyplot as plot
@@ -105,6 +103,27 @@ class Image(object):
 
     def __getitem__(self, slc):
         return self.data[slc]
+
+    def as_grayscale(self, as_type="CV"):
+        """
+        Parameters
+        ----------
+        as_type: str in ("CV", "PV")
+
+        Returns
+        -------
+        A copy of the image (data only, not annotations) as a single channel opencv numpy array,
+        or, if as_type is "PV", then a pyvision Image wrapped around the same.
+        """
+        if self.nchannels == 3:
+            img_gray = cv2.cvtColor(self.data, cv2.COLOR_BGR2GRAY)
+        else:
+            img_gray = self.data.copy()
+
+        if as_type == "CV":
+            return img_gray
+        else:
+            return Image(img_gray)
 
     def as_annotated(self, alpha=0.5, as_type="CV"):
         """
