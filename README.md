@@ -48,6 +48,14 @@ for img in vid:
 	print(vid.current_frame_number)
 	img.show(delay=25) #25ms delay between frames
 
+
+#motion detection
+md = pv3.MotionDetector(method=pv3.BG_SUBTRACT_FRAME_DIFF, buff_size=5, thresh=80)
+for img in vid:
+    md.detect(img)
+    out = md.annotate_frame()
+    if out is not None:
+        out.show(delay=25)
 ```
 
 ## Main Contributors to Pyvision3

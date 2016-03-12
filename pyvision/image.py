@@ -268,7 +268,8 @@ class Image(object):
     def annotate_rect(self, pt1, pt2, color=(255, 0, 0), *args, **kwargs):
         """
         Draws a rectangle using upper left (pt1) and lower right (pt2) coordinates.
-        To fill the rectangle, specify thickness=-1 in the kwargs.
+        To fill the rectangle, specify thickness=-1 in the kwargs. If you have a
+        rectangle as a shapely object (polygon), use the annotate_shape method instead.
 
         Parameters
         ----------
@@ -364,6 +365,33 @@ class Image(object):
         g = 1 if g == 0 else g
         b = 1 if b == 0 else b
         return (b, g, r)
+
+    def copy(self):
+        """
+        Returns
+        -------
+        Returns a pyvision image which is a 'deep copy' of this image which can be
+        freely modified without affecting the source of the copy.
+        """
+        new_data = self.data.copy()
+        return Image(new_data)
+
+    def crop(self, rect):
+        """
+        Crops a rectangular region from this image and returns as
+        a new (copied) pyvision image
+
+        Parameters
+        ----------
+        rect:   shapely rectangle (polygon)
+
+        Returns
+        -------
+        A pyvision image with only the contents of the rectangular area
+        """
+        (minx, miny, maxx, maxy) = np.array(rect.bounds).astype('int')
+        cropped = self.data[miny:maxy, minx:maxx].copy()
+        return Image(cropped)
 
     def resize(self, new_size, keep_aspect=False, as_type="CV"):
         """

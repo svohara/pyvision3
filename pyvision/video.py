@@ -143,7 +143,7 @@ class VideoInterface(object):
             been processed.
         on_new_frame: function or callable object
             A python callable object (function) with a signature of
-            foo( pvImage, frame_num, key=None, buffer=None ), where key is
+            foo( pvImage, frame_num, key=None, image_buffer=None ), where key is
             the key pressed by the user (if any) during the pause_and_play interface, and
             buffer is a reference to the optional image buffer provided to the play method.
         kwargs:

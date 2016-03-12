@@ -15,3 +15,9 @@ class TestImage(TestCase):
         img_thumb = img.resize((64, 64))  # not keeping aspect ratio
         self.assertFalse(np.all(img_thumb[0, :] == 0))
 
+    def test_crop(self):
+        print("\nTest Image 'crop' Method")
+        img = pv3.Image(pv3.IMG_DRIVEWAY)
+        rect = pv3.Rect(20, 50, 100, 100)
+        tile = img.crop(rect)
+        self.assertTupleEqual(tile.data.shape, (100, 100, 3))

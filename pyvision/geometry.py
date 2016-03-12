@@ -44,3 +44,23 @@ def Rect(x, y, w, h):
     shapely.geometry.Polygon object representing the rectangle
     """
     return sg.box(x, y, x+w, h+y)
+
+def CenteredRect(cx, cy, w, h):
+    """
+    Construct a rectangle shape from the center point
+    and the width and height.
+
+    Parameters
+    ----------
+    cx: center point, x
+    cy: center point, y
+    w: width
+    h: height
+
+    Returns
+    -------
+    shapely shape (polygon) object
+    """
+    x = cx - w//2
+    y = cy - h//2
+    return Rect(x, y, w, h)

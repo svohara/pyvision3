@@ -6,7 +6,7 @@ import pyvision as pv3
 
 def demo():
     vid = pv3.Video(pv3.VID_PRIUS, size=(320, 240))
-    vid.seek_to(400) # fast forward to a place that's interesting
+    vid.seek_to(400)  # fast forward to a place that's interesting
 
     # Frame Difference model keys on the middle image in the buffer,
     # and looks at differences between the middle and first, middle and last,
@@ -45,7 +45,7 @@ def demo():
     imontage = pv3.ImageMontage(img_list, layout=(3, 2), tile_size=(320, 240),
                                 labels=img_lbls)
     imontage.show(window_title="Background Subtraction", delay=0)
-
+    return bg
 
 if __name__ == '__main__':
     print("=================================================================")

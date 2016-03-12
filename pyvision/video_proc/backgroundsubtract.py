@@ -12,6 +12,7 @@ import math
 # Constants used to identify a background subtraction method,
 # useful, for example, for specifying which method to use in the
 # MotionDetector class.
+BG_SUBTRACT_STATIC = "BG_SUBTRACT_STATIC"       # static bg model image
 BG_SUBTRACT_FRAME_DIFF = "BG_SUBTRACT_FD"       # frame difference
 # BG_SUBTRACT_MCFD = "BG_SUBTRACT_MCFD"         # motion compensated frame difference
 BG_SUBTRACT_MEDIAN = "BG_SUBTRACT_MM"           # median model
@@ -21,7 +22,7 @@ BG_SUBTRACT_APPROX_MEDIAN = "BG_SUBTRACT_AM"    # approx median
 
 
 class AbstractBGModel:
-    def __init__(self, image_buffer, thresh=20, soft_thresh=False):
+    def __init__(self, image_buffer, thresh=80, soft_thresh=False):
         """
         Parameters
         ----------
@@ -75,6 +76,28 @@ class AbstractBGModel:
         return pv3.Image(mask)
         
 
+class StaticModel(AbstractBGModel):
+    """
+    Uses a single static image as the fixed background model
+    """
+    def __init__(self, image_buffer, bg_image=None, thresh=80, soft_thresh=False):
+        """
+        Parameters
+        ----------
+        bg_image: pyvision Image
+            The image that will serve as the background model
+        """
+        if bg_image is None:
+            raise ValueError("You must supply a background image for use with the StaticModel")
+        AbstractBGModel.__init__(self, image_buffer, thresh=thresh, soft_thresh=soft_thresh)
+        self._bg_array = bg_image.as_grayscale()
+
+    def _compute_bg_diff(self):
+        cur_img_array = self._image_buffer.last().as_grayscale()
+        delta = np.absolute(cur_img_array - self._bg_array)
+        return delta
+
+
 class FrameDifferenceModel(AbstractBGModel):
     """
     This class is useful for simple N-frame differencing method of
@@ -88,9 +111,6 @@ class FrameDifferenceModel(AbstractBGModel):
     is the intersection of the following two absolute differences:
     abs(Middle-First) AND abs(Last-Middle).
     """
-    def __init__(self, image_buffer, thresh=20, soft_thresh=False):
-        AbstractBGModel.__init__(self, image_buffer, thresh, soft_thresh)
-        
     def _compute_bg_diff(self):
         prev_img = self._image_buffer.first().as_grayscale()
         cur_img = self._image_buffer.middle().as_grayscale()
@@ -109,9 +129,6 @@ class MedianModel(AbstractBGModel):
     Uses median pixel values of the images in a buffer to
     approximate a background model.
     """
-    def __init__(self, image_buffer, thresh=20, soft_thresh=False):
-        AbstractBGModel.__init__(self, image_buffer, thresh, soft_thresh)
-            
     def _get_median_vals(self):
         """
         Returns
@@ -137,7 +154,7 @@ class ApproximateMedianModel(MedianModel):
     then only updates the median image using the last (newest) image in the
     buffer.
     """
-    def __init__(self, image_buffer, thresh=20, soft_thresh=False):
+    def __init__(self, image_buffer, thresh=80, soft_thresh=False):
         if not image_buffer.is_full():
             raise ValueError("Image Buffer must be full before initializing Approx. Median Filter.")
         MedianModel.__init__(self, image_buffer, thresh, soft_thresh)
