@@ -1,7 +1,7 @@
 """
 Created on Dec 18, 2015
 
-@author: sohara
+@author: Stephen O'Hara
 """
 import os
 import inspect
@@ -60,11 +60,8 @@ BGR_COLORS = {"black": BGR_BLACK, "white": BGR_WHITE, "gray": BGR_GRAY,
               "pink": BGR_PINK, "purple": BGR_PURPLE, "magenta": BGR_MAGENTA,
               "khaki": BGR_KHAKI}
 
-
-
-
-# It's useful to have some built-in constants referring to
-# sample data files to make demonstrations and tests easy.
+#  It's useful to have some built-in constants referring to
+#  sample data files to make demonstrations and tests easy.
 IMG_DRIVEWAY = resource_filename("pyvision", "data/driveway.jpg")
 IMG_PRIUS = resource_filename("pyvision", "data/prius_gray.jpg")
 IMG_SLEEPYCAT = resource_filename("pyvision", "data/sleepycat.jpg")

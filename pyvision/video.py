@@ -278,7 +278,8 @@ class Video(VideoInterface):
         self.cap = cv2.VideoCapture(video_source)
 
     def __del__(self):
-        self.cap.release()
+        if self.cap is not None:
+            self.cap.release()
 
     def reset(self):
         VideoInterface.reset(self)
