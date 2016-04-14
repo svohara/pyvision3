@@ -13,3 +13,5 @@ from pyvision.video_proc.backgroundsubtract import \
     BG_SUBTRACT_STATIC, BG_SUBTRACT_FRAME_DIFF, BG_SUBTRACT_MEDIAN, BG_SUBTRACT_APPROX_MEDIAN
 from pyvision.video_proc.motiondetection import \
     MotionDetector, MD_BOUNDING_RECTS, MD_STANDARDIZED_RECTS
+
+from pyvision.dataset_tools.crops import crop_regions
