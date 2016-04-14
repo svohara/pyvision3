@@ -46,3 +46,5 @@ def crop_regions(image, shapes, crop_size=None):
 
     crops = [image.crop(r) for r in rects]
     return crops
+
+
