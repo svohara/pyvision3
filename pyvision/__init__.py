@@ -2,7 +2,8 @@
 This is the top-level namespace for the pyvision 3 library
 """
 from .constants import *
-from .geometry import Point, Rect, CenteredRect
+from .pv_exceptions import *
+from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
 from .image import Image
 from .imagebuffer import ImageBuffer
 from .montage import ImageMontage

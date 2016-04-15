@@ -340,8 +340,8 @@ class ImageMontage(object):
             cvTileBGR = cvTile
 
         # copy pixels of tile onto appropriate location in montage image
-        (minx, miny, maxx, maxy) = np.array(roi.bounds, dtype='int')
-        cvImg[miny:maxy, minx:maxx, :] = cvTileBGR
+        (minx, miny, maxx, maxy) = pv3.integer_bounds(roi)
+        cvImg[miny:(maxy+1), minx:(maxx+1), :] = cvTileBGR
 
         if self._labels == 'index':
             # draw image number in lower left corner, respective to ROI

@@ -28,6 +28,10 @@ try:
 except ImportError:
     print("Error importing shapely.")
     print("Shapely is required for annotating shapes (polygons) on images.")
+    print("Shapely is also used to determine if a crop is in bounds, etc.")
+
+from .pv_exceptions import OutOfBoundsError
+from .geometry import in_bounds, integer_bounds
 
 
 class Image(object):
@@ -388,9 +392,14 @@ class Image(object):
         Returns
         -------
         A pyvision image with only the contents of the rectangular area
+
+        Raises an OutOfBounds exception if the rectangle being cropped is
+        partially or fully outside the bounds of the image.
         """
-        (minx, miny, maxx, maxy) = np.array(rect.bounds).astype('int')
-        cropped = self.data[miny:maxy, minx:maxx].copy()
+        if not in_bounds(rect, self):
+            raise OutOfBoundsError("Cropping rectangle {} is out of bounds.".format(rect.bounds))
+        (minx, miny, maxx, maxy) = integer_bounds(rect)
+        cropped = self.data[miny:(maxy+1), minx:(maxx+1)].copy()
         return Image(cropped)
 
     def resize(self, new_size, keep_aspect=False, as_type="CV"):

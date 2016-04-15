@@ -21,3 +21,7 @@ class TestImage(TestCase):
         rect = pv3.Rect(20, 50, 100, 100)
         tile = img.crop(rect)
         self.assertTupleEqual(tile.data.shape, (100, 100, 3))
+
+        # Check that OutOfBoundsError is raised when crop is invalid
+        bad_rect = pv3.Rect(-40, 300, 80, 80)
+        self.assertRaises(pv3.OutOfBoundsError, img.crop, bad_rect)
