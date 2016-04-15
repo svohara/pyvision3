@@ -20,10 +20,11 @@ class TileSelector(object):
     A tile selector instance provides a user interface for selecting some tiles
     out of a larger set, using an image montage display.
     """
-    def __init__(self, tile_generator, chunk_size=48, layout=(6, 8)):
+    def __init__(self, tile_generator, chunk_size=48, layout=(6, 8), tile_size=None):
         self.tile_gen = tile_generator
         self.chunk_size = chunk_size
         self.layout = layout
+        self.tile_size = tile_size
         self.selected = []
         self.done = False
 
@@ -53,10 +54,20 @@ class TileSelector(object):
         if count < self.chunk_size:
             self.done = True
 
-        sz = max(tiles[0].size)
-        imnt = pv3.ImageMontage(tiles, layout=self.layout, tile_size=(sz, sz),
-                                labels=ids, highlight_selected=True)
-        imnt.show(window_title="Tile selector: Page {}".format(page_num))
+        if self.tile_size is None:
+            sz = max(tiles[0].size)
+            tile_size = (sz, sz)
+        else:
+            tile_size = self.tile_size
+
+        # build the montage and display it
+        imnt = pv3.ImageMontage(tiles, layout=self.layout, tile_size=tile_size,
+                                labels='index', highlight_selected=True)
+        win_title = "Tile selector: Page {}".format(page_num)
+        imnt.show(window_title=win_title)
+        cv2.destroyWindow(win_title)
+
+        # add the selected from this chunk to the whole
         selected_ids = [ids[x] for x in imnt.get_highlighted()]
         self.selected += selected_ids
 
@@ -65,7 +76,6 @@ class TileSelector(object):
         while not self.done:
             self.process_chunk(page_num=page)
             page += 1
-        cv2.destroyAllWindows()
 
 
 def tiles_from_files(filenames, labels=None):
@@ -113,14 +123,14 @@ def tiles_from_dir(dirname, pattern="*.jpg"):
 
     Returns
     -------
-    A tile generator, yielding tuples like: (index_str, tile_image, base_file_name)
+    A tile generator, yielding tuples like: (base_file_name, tile_image, str(idx))
     """
     filenames = glob.iglob(os.path.join(dirname, pattern))
     idx = 0
     for filen in filenames:
-        lbl = os.path.basename(filen)
+        id = os.path.basename(filen)
         tile = pv3.Image(filen)
-        yield (str(idx), tile, lbl)
+        yield (id, tile, str(idx))
         idx += 1
 
 
