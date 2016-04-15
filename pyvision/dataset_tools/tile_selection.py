@@ -53,8 +53,8 @@ class TileSelector(object):
         if count < self.chunk_size:
             self.done = True
 
-        tile_size = tiles[0].size
-        imnt = pv3.ImageMontage(tiles, layout=self.layout, tile_size=tile_size,
+        sz = max(tiles[0].size)
+        imnt = pv3.ImageMontage(tiles, layout=self.layout, tile_size=(sz, sz),
                                 labels=ids, highlight_selected=True)
         imnt.show(window_title="Tile selector: Page {}".format(page_num))
         selected_ids = [ids[x] for x in imnt.get_highlighted()]
