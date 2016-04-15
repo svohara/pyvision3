@@ -16,3 +16,6 @@ from pyvision.video_proc.motiondetection import \
     MotionDetector, MD_BOUNDING_RECTS, MD_STANDARDIZED_RECTS
 
 from pyvision.dataset_tools.crops import crop_regions
+from pyvision.dataset_tools.tile_selection import TileSelector, \
+    tiles_from_dir, tiles_from_files, tiles_from_vid
+
