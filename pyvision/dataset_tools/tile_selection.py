@@ -13,6 +13,7 @@ import glob
 import os
 import pyvision as pv3
 import cv2
+import numpy as np
 
 
 class TileSelector(object):
@@ -27,6 +28,20 @@ class TileSelector(object):
         self.tile_size = tile_size
         self.selected = []
         self.done = False
+        self.err_image = self._make_err_image()
+
+    @staticmethod
+    def _make_err_image():
+        """
+        Creates a red box for use when a tile fails to load for
+        whatever reason, and we want the tile selector to show
+        the error image (red tile) so that the user can select
+        it as a bad tile.
+        """
+        red_img = np.zeros((1, 1, 3), dtype='uint8')
+        red_img[0, 0, :] = (0, 0, 255)  # single pixel, BGR order
+        red_img = cv2.resize(red_img, (100, 100))
+        return pv3.Image(red_img)
 
     def process_chunk(self, page_num=1):
         tiles = []
@@ -36,10 +51,12 @@ class TileSelector(object):
 
         # get chunk_size number of tiles and associated data
         # from the tile generator
-        for (id, tile, lbl) in self.tile_gen:
+        for (tile_id, tile, lbl) in self.tile_gen:
+            if tile is None:
+                tile = self.err_image
             tiles.append(tile)
             labels.append(lbl)
-            ids.append(id)
+            ids.append(tile_id)
             count += 1
             if count >= self.chunk_size:
                 break
@@ -80,7 +97,7 @@ class TileSelector(object):
 
 def tiles_from_files(filenames, labels=None):
     """
-    Returns a tile generator that will generate (id, tile_img, label) tuples by
+    Returns a tile generator that will generate (tile_id, tile_img, label) tuples by
     reading image tiles from disk.
 
     Parameters
@@ -102,7 +119,11 @@ def tiles_from_files(filenames, labels=None):
 
     for idx, filen in enumerate(filenames):
         lbl = None if labels is None else labels[idx]
-        tile = pv3.Image(filen)
+        try:
+            tile = pv3.Image(filen)
+        except AttributeError:
+            print("Warning: Unable to load {}".format(filen))
+            tile = None
         yield (str(idx), tile, lbl)
 
 
@@ -128,9 +149,13 @@ def tiles_from_dir(dirname, pattern="*.jpg"):
     filenames = glob.iglob(os.path.join(dirname, pattern))
     idx = 0
     for filen in filenames:
-        id = os.path.basename(filen)
-        tile = pv3.Image(filen)
-        yield (id, tile, str(idx))
+        tile_id = os.path.basename(filen)
+        try:
+            tile = pv3.Image(filen)
+        except AttributeError:
+            print("Warning: Unable to load {}".format(filen))
+            tile = None
+        yield (tile_id, tile, str(idx))
         idx += 1
 
 
