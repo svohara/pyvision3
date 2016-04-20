@@ -7,6 +7,8 @@ import os
 import inspect
 from pkg_resources import resource_filename
 import pyvision as pv3
+import shapely.geometry as sg
+
 
 PACKAGE_DIR = os.path.dirname(inspect.getfile(pv3))
 
@@ -66,6 +68,12 @@ IMG_DRIVEWAY = resource_filename("pyvision", "data/driveway.jpg")
 IMG_PRIUS = resource_filename("pyvision", "data/prius_gray.jpg")
 IMG_SLEEPYCAT = resource_filename("pyvision", "data/sleepycat.jpg")
 VID_PRIUS = resource_filename("pyvision", "data/prius_movie.mov")
+
+# A sample polygon roughly outlining the sleepy cat
+COORDS_SLEEPYCAT = [(285, 460), (408, 323), (545, 368), (561, 352), (530, 280), (645, 184), (714, 240),
+                    (713, 114), (784, 91), (808, 286), (871, 450), (816, 651), (664, 735), (428, 656),
+                    (388, 573), (350, 565), (329, 516), (277, 493)]
+POLY_SLEEPYCAT = sg.Polygon(COORDS_SLEEPYCAT)
 
 if __name__ == '__main__':
     pass

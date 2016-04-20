@@ -8,6 +8,8 @@ created: April 14, 2016
 """
 import pyvision as pv3
 import shapely.geometry as sg
+import shapely.ops as so
+import numpy as np
 
 
 def crop_regions(image, shapes, crop_size=None):
@@ -48,3 +50,70 @@ def crop_regions(image, shapes, crop_size=None):
     return crops
 
 
+def crop_negative_regions(image, shapes, crop_size, N=10):
+    """
+    This function is useful for creating negative or 'background'
+    samples from an image where you already have known foreground
+    regions. Basically, it generates randomly located rectangles of
+    the specified crop size in the image, then removes any that intersect
+    with any of the foreground shapes. The user specifies how many
+    negative samples to crop from the image.
+
+    Parameters
+    ----------
+    image:  pyvision image
+    shapes: shapely polygons list
+        The shapes are the places NOT to crop negative samples from.
+    crop_size: (w,h)
+        The fixed size rectangles to be used for background crops
+    N: integer
+        The number of crops to generate from this image
+
+    Returns
+    -------
+    A list of crops, where each is a pyvision image
+    """
+    positive_area = so.cascaded_union(shapes)
+    validated_crops = []
+
+    while len(validated_crops) < N:
+        rect_gen = random_rect_gen(image.size, crop_size, N=N*2)
+        for rect in rect_gen:
+            if not rect.intersects(positive_area):
+                validated_crops.append(image.crop(rect))
+            if len(validated_crops) >= N:
+                break
+
+    return validated_crops
+
+
+def random_rect_gen(image_size, crop_size, N=1):
+    """
+    Generates random rectangles (crop boundaries) of the specified size from within
+    the image_size bounds.
+
+    Parameters
+    ----------
+    image_size:  tuple
+        The (w, h) of the image, serves as the container size from which the smaller
+        crop rectangles will be generated
+    crop_size: tuple
+        The (w, h) of the crop rectangles, must be smaller than the image_size
+    N: integer
+        The number of random crop rects to create, default is 1
+
+    Returns
+    -------
+    The rectangles as shapely polygons
+    """
+    img_w, img_h = image_size
+    c_w, c_h = crop_size
+
+    offset_x = c_w // 2
+    offset_y = c_h // 2
+
+    rand_xs = np.random.randint(offset_x, high=img_w-offset_x, size=N)
+    rand_ys = np.random.randint(offset_y, high=img_h-offset_y, size=N)
+    for (cx, cy) in zip(rand_xs, rand_ys):
+        rect = pv3.CenteredRect(cx, cy, crop_size[0], crop_size[1])
+        yield rect
