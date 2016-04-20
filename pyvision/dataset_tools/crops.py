@@ -46,7 +46,15 @@ def crop_regions(image, shapes, crop_size=None):
     else:
         rects = [sg.box(*shp.bounds) for shp in shapes]
 
-    crops = [image.crop(r) for r in rects]
+    # crops = [image.crop(r) for r in rects]
+    crops = []
+    for r in rects:
+        try:
+            crop = image.crop(r)
+        except pv3.OutOfBoundsError:
+            print("{} is out of bounds in {}".format(str(r.bounds), image.desc))
+            crop = None
+        crops.append(crop)
     return crops
 
 
