@@ -36,8 +36,10 @@ def demo():
     mnt_image2 = montage2.as_image()
 
     # Extract background crops that do not intersect sleepy cat
+    # Labels for the montage are the upper left corner of the cropped area
     neg_crops = pv3.crop_negative_regions(img, [p_cat], (150, 150), N=10)
-    montage3 = pv3.ImageMontage(neg_crops, layout=(2, 5), tile_size=(150, 150))
+    nc_labels = [str(c.metadata["crop_bounds"][0:2]) for c in neg_crops]
+    montage3 = pv3.ImageMontage(neg_crops, layout=(2, 5), tile_size=(150, 150), labels=nc_labels)
     mnt_image_negs = montage3.as_image()
 
     img.imshow(window_title="Source image and regions")

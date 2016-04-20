@@ -95,6 +95,7 @@ class Image(object):
         self.size = (self.width, self.height)
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
         self.annotation_data = np.zeros((self.height, self.width, 3), dtype='uint8')
+        self.metadata = {}  # metadata dictionary can be used to pass arbitrary info with the image
 
     def __str__(self):
         txt = "Pyvision3 Image: {}".format(self.desc)
@@ -391,7 +392,9 @@ class Image(object):
 
         Returns
         -------
-        A pyvision image with only the contents of the rectangular area
+        A pyvision image with only the contents of the rectangular area. The .metadata of the
+        returned crop image will have a key added "crop_bounds" with value being a tuple of
+        the integer crop coordinates used to generate it (minx, miny, maxx, maxy).
 
         Raises an OutOfBounds exception if the rectangle being cropped is
         partially or fully outside the bounds of the image.
@@ -400,7 +403,9 @@ class Image(object):
             raise OutOfBoundsError("Cropping rectangle {} is out of bounds.".format(rect.bounds))
         (minx, miny, maxx, maxy) = integer_bounds(rect)
         cropped = self.data[miny:(maxy+1), minx:(maxx+1)].copy()
-        return Image(cropped)
+        crop_image = Image(cropped)
+        crop_image.metadata["crop_bounds"] = (minx, miny, maxx, maxy)
+        return crop_image
 
     def resize(self, new_size, keep_aspect=False, as_type="CV"):
         """
