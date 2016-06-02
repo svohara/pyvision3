@@ -14,30 +14,73 @@ class AffineTransformer(object):
     This class defines a callable object that can be applied to
     pyvision images to apply an affine or inverse affine transformation.
     """
-    def __init__(self, affine_matrix):
+    def __init__(self, affine_matrix, dest_size=None):
         """
         Constructor
 
         Parameters
         ----------
         affine_matrix: numpy array (2x3)
+        dest_size: tuple (w, h) or 'fit'
+            If None, then destination size will be set as source_img size
+            when applying the transformation.
 
+            If 'fit', then the destination will be large enough to fit all
+            the original pixels. Also, if 'fit' then the affine transform
+            will be modified to add enough translation so that all pixels are
+            located with positive coordinates.
+
+            Otherwise, dest_size should be a tuple specifying the output
+            width and height. If your output is all black, then you've likely
+            transformed the source image out of bounds of the destination size.
         """
         self.affine_matrix = affine_matrix
+        self.dest_size = dest_size
+        self._fit_points = None
 
-    def __call__(self, source_img, dest_size=None, invert=False):
+    def _get_fit(self, source_size, invert=False):
+        # figure out max size of destination image by taking transformations
+        # of the four corners
+        maxx = source_size[0] - 1
+        maxy = source_size[1] - 1
+        points = np.array([[0, 0, 1], [0, maxy, 1], [maxx, maxy, 1], [maxx, 0, 1]]).T
+        aug_mat = self.get_augmented_matrix()
+
+        if invert:
+            msg = "You can't perform an inverse transform with the 'fit' option "
+            msg += "until you have performed a forward transform to compute the fit."
+            if self._fit_points is None:
+                raise ValueError(msg)
+            aug_mat = np.linalg.inv(aug_mat)
+            new_points = np.dot(aug_mat, self._fit_points)
+        else:
+            new_points = np.dot(aug_mat, points)
+            self._fit_points = new_points
+
+        new_maxx = new_points[0, :].max()
+        new_maxy = new_points[1, :].max()
+        offset_x = new_points[0, :].min()
+        offset_y = new_points[1, :].min()
+
+        # new image size to fit
+        fit_width = int(new_maxx - offset_x) + 1
+        fit_height = int(new_maxy - offset_y) + 1
+
+        # update the transformation so no negative pixel locations
+        # only do this for forward transformations.
+        if not invert:
+            self.affine_matrix[0, 2] -= offset_x
+            self.affine_matrix[1, 2] -= offset_y
+
+        return fit_width, fit_height
+
+    def __call__(self, source_img, invert=False):
         """
 
         Parameters
         ----------
         source_img: pyvision image
-        dest_size: tuple (w, h) or 'fit'
-            If None, then destination size will be set as source_img size.
-            If 'fit', then the destination will be large enough to fit all
-            the original pixels. NOTE: this could make the image quite huge!
-            Also, if 'fit' then the affine transform will be modified to
-            center the result within the new bounds...which is not what
-            you'd want for a pure translation...
+
         invert: boolean
             If true, the inverse transformation is applied to the source_img
             instead of the forward transformation.
@@ -48,21 +91,12 @@ class AffineTransformer(object):
         to the source_img.
         """
         input_array = source_img.data
-        if dest_size is None:
+        if self.dest_size is None:
             dest_size = source_img.size
-        elif dest_size == 'fit':
-            # figure out max size of image by taking transformations
-            # of the four corners
-            maxx = source_img.size[0] - 1
-            maxy = source_img.size[1] - 1
-            points = np.array([[0, 0, 1], [0, maxy, 1], [maxx, maxy, 1], [maxx, 0, 1]]).T
-            aug_mat = self.get_augmented_matrix()
-            new_points = np.dot(aug_mat, points).astype('int')
-            fit_width = new_points[0, :].max() - new_points[0, :].min()
-            fit_height = new_points[1, :].max() - new_points[1, :].min()
-            dest_size = (fit_width+1, fit_height+1)
-            self.affine_matrix[0, 2] -= new_points[0, :].min()
-            self.affine_matrix[1, 2] -= new_points[1, :].min()
+        elif self.dest_size == 'fit':
+            dest_size = self._get_fit(source_img.size, invert=invert)
+        else:
+            dest_size = self.dest_size
 
         flags = cv2.WARP_INVERSE_MAP if invert else 0
         warped = cv2.warpAffine(input_array, self.affine_matrix, dest_size, flags=flags)
@@ -109,7 +143,7 @@ class AffineTranslate(AffineTransformer):
     Convenience subclass of AffineTransformer for performing simple
     translation by dx, dy.
     """
-    def __init__(self, dx, dy):
+    def __init__(self, dx, dy, **kwargs):
         """
         Parameters
         ----------
@@ -118,7 +152,7 @@ class AffineTranslate(AffineTransformer):
         """
         translate_mat = np.array([[1, 0, dx],
                                   [0, 1, dy]], dtype='float32')
-        AffineTransformer.__init__(self, translate_mat)
+        AffineTransformer.__init__(self, translate_mat, **kwargs)
 
 
 class AffineRotation(AffineTransformer):
@@ -130,7 +164,7 @@ class AffineRotation(AffineTransformer):
     Note, for 90, 180, 270 rotations, it would be much faster
     to apply matrix flipping and transposing.
     """
-    def __init__(self, theta_degrees, image_size):
+    def __init__(self, theta_degrees, image_size, **kwargs):
         """
         Constructor
 
@@ -169,6 +203,6 @@ class AffineRotation(AffineTransformer):
         mat = np.dot(trans_2, np.dot(origin_rotation, trans_1))
         mat = mat[0:2, :]  # drop the augmented row
 
-        AffineTransformer.__init__(self, mat)
+        AffineTransformer.__init__(self, mat, **kwargs)
 
 

@@ -32,12 +32,12 @@ class TestAffine(unittest.TestCase):
         # manual method using base class
         affine_mat = np.array([[1, 0, 200],
                                [0, 1, 100]], dtype='float32')  # translate +200x, +100y
-        aff = pv3.AffineTransformer(affine_matrix=affine_mat)
-        out = aff(self.test_img, dest_size=(800, 400))
+        aff = pv3.AffineTransformer(affine_matrix=affine_mat, dest_size=(800, 400))
+        out = aff(self.test_img)
 
         # using convenience class
-        aff2 = pv3.AffineTranslate(200, 100)
-        out2 = aff2(self.test_img, dest_size=(800, 400))
+        aff2 = pv3.AffineTranslate(200, 100, dest_size=(800, 400))
+        out2 = aff2(self.test_img)
 
         # output of the two should be identical
         self.assertTrue(np.allclose(out.data, out2.data))
@@ -50,18 +50,29 @@ class TestAffine(unittest.TestCase):
 
     def test_affine_rotation(self):
         print("\nTesting affine rotation degrees")
-        aff = pv3.AffineRotation(theta_degrees=270, image_size=self.test_img.size)
 
-        # we use the 'fit' option for the dest_size to ensure nothing gets
+        # use the 'fit' option for the dest_size to ensure nothing gets
         # chopped off at the corners
-        out = aff(self.test_img, dest_size='fit')
+        aff = pv3.AffineRotation(theta_degrees=90, image_size=self.test_img.size, dest_size='fit')
 
-        # now we rotate it back using the inverted transform
-        out2 = aff(out, dest_size=self.test_img.size, invert=True)
+        # rotate forward, 'fit' ensures buffer space for entire image
+        out = aff(self.test_img)
+
+        # rotate back, we should recover the test_img, more or less
+        out2 = aff(out, invert=True)
+
+        # DEBUG
+        out.save("rot_fwd.jpg")
+        out2.save("rot_inv.jpg")
 
         # this should be true when we rotate by 90, 180, 270, etc., otherwise
         # interpolation effects will cause differences between source and out2
         self.assertTrue(np.allclose(self.test_img.data, out2.data))
+
+        # test that a ValueError is raised if we try to apply an inverse transform
+        # when using the 'fit' option, but we haven't yet computed a fit (i.e., a forward pass)
+        aff2 = pv3.AffineRotation(theta_degrees=30, image_size=self.test_img.size, dest_size='fit')
+        self.assertRaises(ValueError, aff2, self.test_img, invert=True)
 
     def test_affine_invert(self):
         print("\nTesting inverting affine transformation")
