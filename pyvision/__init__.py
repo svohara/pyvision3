@@ -6,7 +6,7 @@ from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
 from .image import Image
 
-from .affine import AffineTransformer
+from .affine import AffineTransformer, AffineRotation, AffineTranslate
 
 from .imagebuffer import ImageBuffer
 from .montage import ImageMontage
