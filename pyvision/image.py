@@ -522,6 +522,8 @@ class Image(object):
                 img_array[:, :, 0] = img_array[:, :, 2]
                 img_array[:, :, 2] = tmp
                 del tmp
+            if window_title is not None:
+                plot.figure()
             plot.imshow(img_array)
             plot.title(window_title)
             plot.draw()
