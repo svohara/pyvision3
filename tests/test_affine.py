@@ -1,7 +1,6 @@
 import unittest
 import pyvision as pv3
 import numpy as np
-import math
 
 
 class TestAffine(unittest.TestCase):
@@ -62,8 +61,8 @@ class TestAffine(unittest.TestCase):
         out2 = aff(out, invert=True)
 
         # DEBUG
-        out.save("rot_fwd.jpg")
-        out2.save("rot_inv.jpg")
+        # out.save("rot_fwd.jpg")
+        # out2.save("rot_inv.jpg")
 
         # this should be true when we rotate by 90, 180, 270, etc., otherwise
         # interpolation effects will cause differences between source and out2
