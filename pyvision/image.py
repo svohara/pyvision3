@@ -16,6 +16,8 @@ onto the image array itself.
 
 import cv2
 import numpy as np
+import numpy.ma as ma  # masked arrays, used for annotations
+
 
 try:
     import matplotlib.pyplot as plot
@@ -94,8 +96,15 @@ class Image(object):
         self.height, self.width = self.data.shape[0:2]
         self.size = (self.width, self.height)
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
-        self.annotation_data = np.zeros((self.height, self.width, 3), dtype='uint8')
-        self.metadata = {}  # metadata dictionary can be used to pass arbitrary info with the image
+
+        # Annotation data is a masked image array.
+        self.annotation_data = ma.MaskedArray(data=np.zeros((self.height, self.width, 3), dtype='uint8'))
+        # initially set all annotation data as being masked, when a value is assigned to the annotation
+        # image, the corresponding mask value will automatically be set to nomask.
+        self.annotation_data.mask = True
+
+        # metadata dictionary can be used to pass arbitrary info with the image
+        self.metadata = {}
 
     def __str__(self):
         txt = "Pyvision3 Image: {}".format(self.desc)
@@ -159,12 +168,12 @@ class Image(object):
         # TODO: What if self.data is a floating point image and the annotations
         # are uint8 BGR? We should probably call a normalizing routine of some
         # sort that copies/converts self.data into a 3-channel BGR 8-bit image
-        mask = self.annotation_data.nonzero()
+        pixs = self.annotation_data.mask == ma.nomask
         if self.nchannels == 1:
             tmp_img = cv2.cvtColor(self.data, cv2.COLOR_GRAY2BGR)
         else:
             tmp_img = self.data.copy()
-        tmp_img[mask] = alpha * self.annotation_data[mask] + (1 - alpha) * tmp_img[mask]
+        tmp_img[pixs] = alpha * self.annotation_data[pixs] + (1 - alpha) * tmp_img[pixs]
 
         if as_type == "PV":
             return Image(tmp_img)
@@ -329,6 +338,18 @@ class Image(object):
         cv2.putText(self.annotation_data, txt, point, fontFace=font_face,
                     fontScale=font_scale, color=c, *args, **kwargs)
 
+    def annotate_mask(self, mask_img):
+        """
+        Replaces any and all current annotations on the image with the provided
+        3-channel 8-bit mask image.
+
+        Parameters
+        ----------
+        mask_img:   ndarray (3 channel, uint8 image, same size as self.data)
+        """
+        assert mask_img.shape[0:2] == self.data.shape[0:2], "Invalid mask. Must be same (w,h) as image."
+        self.annotation_data[:] = mask_img[:]  # this should implicitly make all pixels unmasked
+
     def _draw_segments(self, simple_shape, color, *args, **kwargs):
         """
         Internal method for drawing a "simple" shapely geometric object,
@@ -353,9 +374,7 @@ class Image(object):
 
     def _fix_color_tuple(self, color):
         """
-        Puts the color tuple (r,g,b) into (b,g,r) order. Replaces any zeros with ones,
-        because the way we composite the annotation layer onto the image only looks for
-        non-zero values.
+        Puts the color tuple (r,g,b) into (b,g,r) order.
 
         Parameters
         ----------
@@ -363,12 +382,9 @@ class Image(object):
 
         Returns
         -------
-        tuple (b,g,r) where the minimum for each channel is set to 1 instead of 0
+        tuple (b,g,r)
         """
         (r, g, b) = color
-        r = 1 if r == 0 else r
-        g = 1 if g == 0 else g
-        b = 1 if b == 0 else b
         return (b, g, r)
 
     def copy(self):
@@ -379,7 +395,9 @@ class Image(object):
         freely modified without affecting the source of the copy.
         """
         new_data = self.data.copy()
-        return Image(new_data)
+        new_img = Image(new_data)
+        new_img.annotation_data = self.annotation_data.copy()
+        return new_img
 
     def crop(self, rect):
         """
