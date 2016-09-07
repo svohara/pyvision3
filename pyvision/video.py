@@ -98,6 +98,40 @@ class VideoInterface(object):
         self.current_frame_num = 0
         self.current_frame = None
 
+    def save(self, out_file, out_size=(640, 480), four_cc="MP4V", fps=15):
+        """
+        Saves the entire video to a movie file.
+        Parameters
+        ----------
+        out_file: str
+            The output video file name to save the video
+        out_size: tuple (width, height)
+            The output frame size for the video, which in many cases
+            might be smaller than the input frames. Each frame will
+            be resized appropriately, with letterboxing as required.
+        four_cc: str
+            The four_cc code used to encode the video, default
+            is "MP4V"
+        fps:    int
+            Desired frames per second
+        """
+        self.reset()
+        print("Saving video to: {}".format(out_file))
+        vid_out = cv2.VideoWriter(filename=out_file,
+                                  fourcc=cv2.VideoWriter_fourcc(*four_cc),
+                                  fps=fps,
+                                  frameSize=out_size)
+
+        for frame in self:
+            if frame.size != out_size:
+                out_frame = frame.resize(out_size, as_type="PV", keep_aspect=True)
+            else:
+                out_frame = frame
+            vid_out.write(out_frame.data)
+
+        self.reset()
+        print("Completed.")
+
     def play(self, window="Pyvision Video", pos=None, delay=20,
              annotate=True, image_buffer=None, start_frame=None, end_frame=None,
              on_new_frame=None, **kwargs):
