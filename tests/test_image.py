@@ -1,6 +1,7 @@
 from unittest import TestCase
 import pyvision as pv3
 import numpy as np
+import cv2
 
 
 class TestImage(TestCase):
@@ -25,3 +26,12 @@ class TestImage(TestCase):
         # Check that OutOfBoundsError is raised when crop is invalid
         bad_rect = pv3.Rect(-40, 300, 80, 80)
         self.assertRaises(pv3.OutOfBoundsError, img.crop, bad_rect)
+
+    def test_mask(self):
+        print("\nTest Image 'annotate_mask' Method")
+        img = pv3.Image(pv3.IMG_DRIVEWAY)
+        mask = cv2.imread(pv3.IMG_MASK)
+        mask_target = cv2.imread(pv3.IMG_MASK_RESULT) # known good result
+        img.annotate_mask(mask)
+        masked_image = img.as_annotated()  # what we get
+        self.assertTrue(np.allclose(masked_image, mask_target))

@@ -16,7 +16,7 @@ onto the image array itself.
 
 import cv2
 import numpy as np
-import numpy.ma as ma  # masked arrays, used for annotations
+# import numpy.ma as ma  # masked arrays, used for annotations
 
 
 try:
@@ -34,6 +34,10 @@ except ImportError:
 
 from .pv_exceptions import OutOfBoundsError
 from .geometry import in_bounds, integer_bounds
+
+
+class ImageAnnotationError(ValueError):
+    pass
 
 
 class Image(object):
@@ -97,11 +101,9 @@ class Image(object):
         self.size = (self.width, self.height)
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
 
-        # Annotation data is a masked image array.
-        self.annotation_data = ma.MaskedArray(data=np.zeros((self.height, self.width, 3), dtype='uint8'))
-        # initially set all annotation data as being masked, when a value is assigned to the annotation
-        # image, the corresponding mask value will automatically be set to nomask.
-        self.annotation_data.mask = True
+        # Annotation data is a separate BGR image array.
+        self.annotation_data = np.zeros((self.height, self.width, 3), dtype="uint8")+1
+        self.annotation_transparency = (1, 1, 1)
 
         # metadata dictionary can be used to pass arbitrary info with the image
         self.metadata = {}
@@ -139,6 +141,16 @@ class Image(object):
         else:
             return Image(img_gray)
 
+    def set_annotation_transparency(self, color=(1, 1, 1)):
+        """
+        Sets the transparent color value in the annotations mask.
+
+        Parameters
+        ----------
+        color:  (B, G, R) color tuple, default is (1, 1, 1).
+        """
+        self.annotation_transparency = color
+
     def as_annotated(self, alpha=0.5, as_type="CV"):
         """
         Provides an array which represents the merging of the image data
@@ -168,12 +180,18 @@ class Image(object):
         # TODO: What if self.data is a floating point image and the annotations
         # are uint8 BGR? We should probably call a normalizing routine of some
         # sort that copies/converts self.data into a 3-channel BGR 8-bit image
-        pixs = self.annotation_data.mask == ma.nomask
         if self.nchannels == 1:
             tmp_img = cv2.cvtColor(self.data, cv2.COLOR_GRAY2BGR)
         else:
             tmp_img = self.data.copy()
-        tmp_img[pixs] = alpha * self.annotation_data[pixs] + (1 - alpha) * tmp_img[pixs]
+
+        if self.annotation_transparency is not None:
+            pixs = np.nonzero((self.annotation_data != self.annotation_transparency).all(axis=2))
+            tmp_img[pixs] = ((1.0 - alpha) * tmp_img[pixs] +
+                            alpha * self.annotation_data[pixs]).astype('uint8')
+        else:
+            tmp_img = ((1.0 - alpha) * tmp_img + alpha * self.annotation_data).astype('uint8')
+            # tmp_img = cv2.addWeighted(tmp_img, 1.0-alpha, self.annotation_data, alpha, 0.0)
 
         if as_type == "PV":
             return Image(tmp_img)
@@ -237,7 +255,6 @@ class Image(object):
         color:  tuple (r,g,b)
         """
         pt = (int(point.x), int(point.y)) if isinstance(point, sg.point.Point) else point
-
         self.annotate_circle(pt, 3, color, thickness=-1)
 
     def annotate_circle(self, ctr, radius, color=(255, 0, 0), *args, **kwargs):
@@ -338,17 +355,26 @@ class Image(object):
         cv2.putText(self.annotation_data, txt, point, fontFace=font_face,
                     fontScale=font_scale, color=c, *args, **kwargs)
 
-    def annotate_mask(self, mask_img):
+    def annotate_mask(self, mask_img, transparency=(0, 0, 0)):
         """
         Replaces any and all current annotations on the image with the provided
-        3-channel 8-bit mask image.
+        3-channel 8-bit mask image. To change what mask pixels are considered
+        transparent, use the set_annotation_transparency method.
 
         Parameters
         ----------
-        mask_img:   ndarray (3 channel, uint8 image, same size as self.data)
+        mask_img:       ndarray (3 channel, uint8 image, same size as self.data, BGR color order)
+        transparency:   pixels in the input mask_img that match this color will be set to the
+                        image's defined transparency color. Use None for no transparency setting,
+                        which is good when you know that the mask_img uses the same transparency value
+                        as this image's self.annotation_transparency value. Default is black (0,0,0).
         """
-        assert mask_img.shape[0:2] == self.data.shape[0:2], "Invalid mask. Must be same (w,h) as image."
-        self.annotation_data[:] = mask_img[:]  # this should implicitly make all pixels unmasked
+        if mask_img.shape[0:2] != self.data.shape[0:2]:
+            raise ImageAnnotationError("Invalid mask. Must be same (w,h) as image.")
+        self.annotation_data = mask_img.copy()
+        if transparency is not None:
+            pix = np.nonzero((self.annotation_data == transparency).all(axis=2))
+            self.annotation_data[pix] = self.annotation_transparency
 
     def _draw_segments(self, simple_shape, color, *args, **kwargs):
         """
@@ -372,6 +398,18 @@ class Image(object):
             pt2 = points[i]
             self.annotate_line(pt1, pt2, color, *args, **kwargs)
 
+    def _check_color_transparent(self, color):
+        """
+        Helper function to alert user if the selected annotation color is the same as
+        the current transparency color of the annotation mask image.
+
+        Parameters
+        ----------
+        color:  (r, g, b) tuple.
+        """
+        if color == self.annotation_transparency:
+            raise ImageAnnotationError("Selected annotation color {} is transparent.".format(color))
+
     def _fix_color_tuple(self, color):
         """
         Puts the color tuple (r,g,b) into (b,g,r) order.
@@ -385,6 +423,7 @@ class Image(object):
         tuple (b,g,r)
         """
         (r, g, b) = color
+        self._check_color_transparent(color)
         return (b, g, r)
 
     def copy(self):
@@ -546,6 +585,14 @@ class Image(object):
             plot.title(window_title)
             plot.draw()
             plot.show(block=False)
+
+    def show_annotation(self, window_title=None, highgui=True, delay=0, pos=None):
+        """
+        Display only the annotations layer of this image.
+        """
+        tmp = Image(self.annotation_data)
+        tmp.show(window_title=window_title, highgui=highgui, delay=delay, pos=pos,
+                 annotations=False)
 
     def save(self, filename, *args, as_annotated=True, **kwargs):
         """

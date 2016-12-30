@@ -13,7 +13,7 @@ import shapely.geometry as sg
 PACKAGE_DIR = os.path.dirname(inspect.getfile(pv3))
 
 # Common RGB colors (for use with pyvision annotations)
-RGB_BLACK = (1, 1, 1)  # not zeros, because that can be confusing with masks
+RGB_BLACK = (0, 0, 0)  # not zeros, because that can be confusing with masks
 RGB_GRAY = (128, 128, 128)
 RGB_WHITE = (255, 255, 255)
 RGB_BLUE = (0, 0, 255)
@@ -38,7 +38,7 @@ RGB_COLORS = {"black": RGB_BLACK, "white": RGB_WHITE, "gray": RGB_GRAY,
               "khaki": RGB_KHAKI}
 
 # Common colors as BGR tuples (for use with cv2 functions)
-BGR_BLACK = (1, 1, 1)  # not zeros, because that can be confusing with masks
+BGR_BLACK = (0, 0, 0)
 BGR_GRAY = (128, 128, 128)
 BGR_WHITE = (255, 255, 255)
 BGR_BLUE = (255, 0, 0)
@@ -67,6 +67,8 @@ BGR_COLORS = {"black": BGR_BLACK, "white": BGR_WHITE, "gray": BGR_GRAY,
 IMG_DRIVEWAY = resource_filename("pyvision", "data/driveway.jpg")
 IMG_PRIUS = resource_filename("pyvision", "data/prius_gray.jpg")
 IMG_SLEEPYCAT = resource_filename("pyvision", "data/sleepycat.jpg")
+IMG_MASK = resource_filename("pyvision", "data/test_mask.tif")
+IMG_MASK_RESULT = resource_filename("pyvision", "data/test_mask_result.tif")
 VID_PRIUS = resource_filename("pyvision", "data/prius_movie.mov")
 
 # A sample polygon roughly outlining the sleepy cat
