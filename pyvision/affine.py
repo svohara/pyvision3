@@ -206,3 +206,4 @@ class AffineRotation(AffineTransformer):
         AffineTransformer.__init__(self, mat, **kwargs)
 
 
+# TODO AffineFromPoints, AffineFromRect

@@ -531,8 +531,8 @@ class Image(object):
             If None (default) then the image title will be self.desc, otherwise
             specify a string to be used for this purpose.
         highgui: boolean
-            If True then opencv highgui library is used to display the image.
-            Otherwise (default) the current figure of matplotlib will be used.
+            If True (default) then opencv highgui library is used to display the image.
+            Otherwise the current figure of matplotlib will be used.
         annotations: boolean
             If True (default) then the annotations will be shown over the base image,
             otherwise only the base image will be shown.
