@@ -186,7 +186,7 @@ class Image(object):
             tmp_img = self.data.copy()
 
         if self.annotation_transparency is not None:
-            pixs = np.nonzero((self.annotation_data != self.annotation_transparency).all(axis=2))
+            pixs = np.nonzero((self.annotation_data != self.annotation_transparency).any(axis=2))
             tmp_img[pixs] = ((1.0 - alpha) * tmp_img[pixs] +
                             alpha * self.annotation_data[pixs]).astype('uint8')
         else:
