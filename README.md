@@ -4,11 +4,11 @@ A computer vision library that complements OpenCV 3.x to add many useful feature
 ## Installation
 Install prerequisites:
 
-* python 3.4
+* python >= 3.4
 * numpy
-* opencv 3.x with bindings for python 3.4
+* opencv >= 3.0 with bindings for python
 * matplotlib (optional, recommended)
-* shapely (optional, annotating polygons)
+* shapely, which in turn requires libgeos/libgeos-dev to install
 
 In the root directory of the pyvision code (the directory containing the setup.py script), run the following to install to the system packages:
 
