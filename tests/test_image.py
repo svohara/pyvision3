@@ -1,10 +1,10 @@
-from unittest import TestCase
+import unittest
 import pyvision as pv3
 import numpy as np
 import cv2
 
 
-class TestImage(TestCase):
+class TestImage(unittest.TestCase):
     def test_resize(self):
         print("\nTest Image 'resize' Method")
         img = pv3.Image(pv3.IMG_PRIUS)
@@ -31,7 +31,10 @@ class TestImage(TestCase):
         print("\nTest Image 'annotate_mask' Method")
         img = pv3.Image(pv3.IMG_DRIVEWAY)
         mask = cv2.imread(pv3.IMG_MASK)
-        mask_target = cv2.imread(pv3.IMG_MASK_RESULT) # known good result
+        mask_target = cv2.imread(pv3.IMG_MASK_RESULT)   # known good result
         img.annotate_mask(mask)
         masked_image = img.as_annotated()  # what we get
         self.assertTrue(np.allclose(masked_image, mask_target))
+
+if __name__ == '__main__':
+    unittest.main()
