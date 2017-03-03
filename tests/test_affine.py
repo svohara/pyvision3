@@ -60,10 +60,6 @@ class TestAffine(unittest.TestCase):
         # rotate back, we should recover the test_img, more or less
         out2 = aff(out, invert=True)
 
-        # DEBUG
-        # out.save("rot_fwd.jpg")
-        # out2.save("rot_inv.jpg")
-
         # this should be true when we rotate by 90, 180, 270, etc., otherwise
         # interpolation effects will cause differences between source and out2
         self.assertTrue(np.allclose(self.test_img.data, out2.data))
