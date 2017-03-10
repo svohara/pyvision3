@@ -26,6 +26,8 @@ analysis pipelines.
 import cv2
 import pyvision as pv3
 import sys
+import os
+import glob
 
 
 class VideoInterface(object):
@@ -74,7 +76,7 @@ class VideoInterface(object):
                 print("Seeking video to desired position...")
                 sys.stdout.flush()
             while self.current_frame_num < frame_num:
-                _ = self.next()
+                _ = next(self)
 
         return self._get_resized()
 
@@ -307,7 +309,7 @@ class Video(VideoInterface):
             force each frame of the video source to be resized appropriately.
             Specify None to return the native size of the video source.
         """
-        VideoInterface.__init__(self, size=size)
+        super().__init__(size=size)
         self.source = video_source
         self.cap = cv2.VideoCapture(video_source)
 
@@ -368,7 +370,7 @@ class VideoFromFileList(VideoInterface):
         size: tuple (w,h)
             Optional tuple to indicate the desired playback window size.
         """
-        VideoInterface.__init__(self, size=size)
+        super().__init__(size=size)
         self.filelist = filelist
         self.num_frames = len(filelist)
         self._random_access = True
@@ -391,6 +393,31 @@ class VideoFromFileList(VideoInterface):
         return self._get_resized()
 
 
+class VideoFromDir(VideoFromFileList):
+    """
+    Consider the sorted files in a given directory as a video.
+    This is a convenience class that uses VideoFromFileList
+    """
+    def __init__(self, directory, pattern="*", size=None):
+        """
+
+        Parameters
+        ----------
+        directory:  the directory where the image files are stored
+        pattern:    the file pattern to include, default is "*", meaning all files
+                    in the directory. If your directory contains non-image files
+                    as well as the images, use this to filter the input files
+                    for example, "*.jpg". This pattern will be given to the glob function
+                    as sorted(glob.glob(os.path.join(directory, pattern)))
+        size:       The output video frame size
+        """
+        assert os.path.isdir(directory)
+        self.directory = directory
+        self.pattern = pattern
+        file_list = sorted(glob.glob(os.path.join(directory, pattern)))
+        super().__init__(filelist=file_list, size=size)
+
+
 class VideoFromImageStack(VideoInterface):
     """
     This class allows the user to treat a stack of grayscale images in a 3D numpy array as a video.
@@ -407,7 +434,7 @@ class VideoFromImageStack(VideoInterface):
         size: tuple (w,h)
             the optional width,height to resize the input frames
         """
-        VideoInterface.__init__(self, size=size)
+        super().__init__(size=size)
         self.image_stack = image_stack
         self.num_frames = image_stack.shape[0]
         self._random_access = True

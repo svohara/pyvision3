@@ -7,11 +7,13 @@ which are UIs that show a montage of images (or videos)
 in a single window. This is useful for visualizing
 a set of results.
 """
-
-import pyvision as pv3
 import cv2
 import weakref
 import numpy as np
+
+from .image import Image
+from .geometry import Rect, Point, integer_bounds
+from .video import VideoInterface
 
 
 class ImageMontage(object):
@@ -134,7 +136,7 @@ class ImageMontage(object):
         the ImageMontage.show() method, then this method will return the montage image
         computed from the last call to draw().
         """
-        return pv3.Image(self._cvMontageImage)
+        return Image(self._cvMontageImage)
 
     def show(self, window_title="Image Montage", pos=None, delay=0):
         """
@@ -200,14 +202,14 @@ class ImageMontage(object):
         """
         if self._by_row:
             # scroll up/down to expose next/prev row
-            decr_rect = pv3.Rect(0, 0, self._size[0], self._ypad)
-            incr_rect = pv3.Rect(0, self._size[1] - self._ypad, self._size[0], self._ypad)
+            decr_rect = Rect(0, 0, self._size[0], self._ypad)
+            incr_rect = Rect(0, self._size[1] - self._ypad, self._size[0], self._ypad)
         else:
             # scroll left/right to expose next/prev col
-            decr_rect = pv3.Rect(0, 0, self._xpad, self._size[1])
-            incr_rect = pv3.Rect(self._size[0] - self._xpad, 0, self._xpad, self._size[1])
+            decr_rect = Rect(0, 0, self._xpad, self._size[1])
+            incr_rect = Rect(self._size[0] - self._xpad, 0, self._xpad, self._size[1])
 
-        pt = pv3.Point(x, y)
+        pt = Point(x, y)
         if incr_rect.contains(pt):
             # print "DEBUG: Increment Region"
             return 1
@@ -327,7 +329,7 @@ class ImageMontage(object):
 
         cvImg = self._cvMontageImage
         cvTile = tile.data
-        roi = pv3.Rect(pos_x, pos_y, self._tileSize[0], self._tileSize[1])
+        roi = Rect(pos_x, pos_y, self._tileSize[0], self._tileSize[1])
 
         # Save the position of this image
         self._image_positions.append([self._images[img_num], img_num, roi])
@@ -340,7 +342,7 @@ class ImageMontage(object):
             cvTileBGR = cvTile
 
         # copy pixels of tile onto appropriate location in montage image
-        (minx, miny, maxx, maxy) = pv3.integer_bounds(roi)
+        (minx, miny, maxx, maxy) = integer_bounds(roi)
         cvImg[miny:(maxy+1), minx:(maxx+1), :] = cvTileBGR
 
         if self._labels == 'index':
@@ -412,3 +414,80 @@ class ClickHandler(object):
 
             montage.draw()
             cv2.imshow(window, montage._cvMontageImage)
+
+
+class VideoMontage(VideoInterface):
+    """
+    Provides a visualization of several videos playing back in
+    a single window. This can be very handy, for example, to
+    show tracking results of multiple objects from a single video,
+    or for minimizing screen real-estate when showing multiple
+    video sources.
+
+    A video montage object is an iterator, so you "play" the
+    montage by iterating through all the frames, just as with
+    a standard video object.
+    """
+
+    def __init__(self, video_dict, layout=(2, 4), tile_size=(64, 48)):
+        """
+        Parameters
+        ----------
+        video_dict: A dictionary of videos to display in the montage. The keys are the video labels, and
+            the values are objects adhering to the pyvision video interface. (pv.Video, pv.VideoFromImages, etc.)
+        layout: A tuple of (rows,cols) to indicate the layout of the montage. Videos will be separated by
+            a one-pixel gutter. Videos will be drawn to the montage such that a row is filled up prior to moving
+            to the next. The videos are drawn to the montage in the sorted order of the video keys in the dictionary.
+        tile_size: The window size to display each video in the montage. If the video frame sizes are larger than
+            this size, it will be cropped. If you wish to resize, use the size option in the pv.Video class to have
+            the output size of the video resized appropriately.
+        """
+        super().__init__(size=None)
+        if len(video_dict) < 1:
+            raise ValueError("You must provide at least one video in the video_dict variable.")
+        self.vids = video_dict
+        self.layout = layout
+        self.vid_size = tile_size
+        self.imgs = {}
+        self.stopped = []
+
+    def reset(self):
+        for key in self.vids:
+            v = self.vids[key]
+            v.reset()
+        self.current_frame = None
+        self.current_frame_num = 0
+        self.stopped = []
+        self.imgs = {}
+
+    def __next__(self):
+        if len(self.stopped) == len(self.vids.keys()):
+            print("All Videos in the Video Montage Have Completed.")
+            raise StopIteration
+
+        # get next image from each video and put on montage
+        # if video has ended, continue to display last image
+        # stop when all videos are done.
+        for key in self.vids:
+            if key in self.stopped:
+                continue  # this video has already reached its end.
+            v = self.vids[key]
+            try:
+                tmp = next(v)
+                self.imgs[key] = tmp
+            except StopIteration:
+                # print "End of a Video %s Reached"%key
+                self.stopped.append(key)
+
+        keys = sorted(self.imgs.keys())
+        image_list = []
+        for k in keys:
+            image_list.append(self.imgs[k])
+
+        # create an image montage from the current video frames and advance the frame counter
+        im = ImageMontage(image_list, self.layout, self.vid_size, gutter=2, by_row=True, labels=keys)
+        self.current_frame = im.as_image()
+        self.current_frame_num += 1
+
+        return self._get_resized()
+

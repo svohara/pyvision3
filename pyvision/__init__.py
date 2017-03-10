@@ -5,13 +5,11 @@ from .constants import *
 from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
 from .image import Image
-
 from .affine import AffineTransformer, AffineRotation, AffineTranslate
-
 from .imagebuffer import ImageBuffer
-from .montage import ImageMontage
+from .video import VideoInterface, Video, VideoFromFileList, VideoFromDir, VideoFromImageStack
+from .montage import ImageMontage, VideoMontage
 
-from .video import VideoInterface, Video, VideoFromFileList, VideoFromImageStack
 from pyvision.video_proc.backgroundsubtract import \
     FrameDifferenceModel, MedianModel, ApproximateMedianModel, AbstractBGModel, StaticModel, \
     BG_SUBTRACT_STATIC, BG_SUBTRACT_FRAME_DIFF, BG_SUBTRACT_MEDIAN, BG_SUBTRACT_APPROX_MEDIAN
