@@ -377,7 +377,11 @@ class VideoFromFileList(VideoInterface):
 
     def __getitem__(self, frame_num):
         frame = self.filelist[frame_num]
-        return pv3.Image(frame)
+        try:
+            img = pv3.Image(frame)
+        except AttributeError:
+            raise pv3.InvalidImageFile("Image file is not valid: {}".format(frame))
+        return img
 
     def __next__(self):
         """
@@ -386,8 +390,8 @@ class VideoFromFileList(VideoInterface):
         if self.current_frame_num >= self.num_frames:
             raise StopIteration
 
-        frame = self.filelist[self.current_frame_num]
-        self.current_frame = pv3.Image(frame)
+        frame = self[self.current_frame_num]
+        self.current_frame = frame
         self.current_frame_num += 1
 
         return self._get_resized()

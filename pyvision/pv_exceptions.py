@@ -8,3 +8,6 @@ created: April 15, 2016
 class OutOfBoundsError(ValueError):
     pass
 
+
+class InvalidImageFile(ValueError):
+    pass
