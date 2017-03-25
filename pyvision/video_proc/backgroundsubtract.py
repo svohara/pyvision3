@@ -90,10 +90,10 @@ class StaticModel(AbstractBGModel):
         if bg_image is None:
             raise ValueError("You must supply a background image for use with the StaticModel")
         AbstractBGModel.__init__(self, image_buffer, thresh=thresh, soft_thresh=soft_thresh)
-        self._bg_array = bg_image.as_grayscale()
+        self._bg_array = bg_image.as_grayscale(as_type="CV")
 
     def _compute_bg_diff(self):
-        cur_img_array = self._image_buffer.last().as_grayscale()
+        cur_img_array = self._image_buffer.last().as_grayscale(as_type="CV")
         delta = np.absolute(cur_img_array - self._bg_array)
         return delta
 
@@ -112,9 +112,9 @@ class FrameDifferenceModel(AbstractBGModel):
     abs(Middle-First) AND abs(Last-Middle).
     """
     def _compute_bg_diff(self):
-        prev_img = self._image_buffer.first().as_grayscale()
-        cur_img = self._image_buffer.middle().as_grayscale()
-        next_img = self._image_buffer.last().as_grayscale()
+        prev_img = self._image_buffer.first().as_grayscale(as_type="CV")
+        cur_img = self._image_buffer.middle().as_grayscale(as_type="CV")
+        next_img = self._image_buffer.last().as_grayscale(as_type="CV")
         
         delta1 = np.absolute(cur_img - prev_img)   # frame diff 1
         delta2 = np.absolute(next_img - cur_img)   # frame diff 2
@@ -141,7 +141,7 @@ class MedianModel(AbstractBGModel):
         return medians
     
     def _compute_bg_diff(self):
-        img_gray = self._image_buffer.last().as_grayscale()
+        img_gray = self._image_buffer.last().as_grayscale(as_type="CV")
         img_BG = self._get_median_vals()
         return img_gray - img_BG
             
@@ -162,7 +162,7 @@ class ApproximateMedianModel(MedianModel):
         
     def _update_median(self):
         cur_img = self._image_buffer.last()
-        cur_mat = cur_img.as_grayscale()
+        cur_mat = cur_img.as_grayscale(as_type="CV")
         median = self._medians
         up = (cur_mat > median)*1.0
         down = (cur_mat < median)*1.0
@@ -170,7 +170,7 @@ class ApproximateMedianModel(MedianModel):
         
     def _compute_bg_diff(self):
         self._update_median()
-        img_gray = self._image_buffer.last().as_grayscale()
+        img_gray = self._image_buffer.last().as_grayscale(as_type="CV")
         img_BG = self._medians
         return img_gray - img_BG
 

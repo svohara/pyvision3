@@ -16,8 +16,6 @@ onto the image array itself.
 
 import cv2
 import numpy as np
-# import numpy.ma as ma  # masked arrays, used for annotations
-
 
 try:
     import matplotlib.pyplot as plot
@@ -32,12 +30,8 @@ except ImportError:
     print("Shapely is required for annotating shapes (polygons) on images.")
     print("Shapely is also used to determine if a crop is in bounds, etc.")
 
-from .pv_exceptions import OutOfBoundsError
-from .geometry import in_bounds, integer_bounds
-
-
-class ImageAnnotationError(ValueError):
-    pass
+from .pv_exceptions import OutOfBoundsError, ImageAnnotationError
+from .geometry import in_bounds, integer_bounds, Rect
 
 
 class Image(object):
@@ -120,11 +114,11 @@ class Image(object):
     def __getitem__(self, slc):
         return self.data[slc]
 
-    def as_grayscale(self, as_type="CV"):
+    def as_grayscale(self, as_type="PV"):
         """
         Parameters
         ----------
-        as_type: str in ("CV", "PV")
+        as_type: str in ("CV", "PV"), default is "PV"
 
         Returns
         -------
@@ -151,7 +145,7 @@ class Image(object):
         """
         self.annotation_transparency = color
 
-    def as_annotated(self, alpha=0.5, as_type="CV"):
+    def as_annotated(self, alpha=0.5, as_type="PV"):
         """
         Provides an array which represents the merging of the image data
         with the annotations layer.
@@ -163,7 +157,7 @@ class Image(object):
             This is the alpha blend when merging the annotations layer onto the image data.
             1.0 means that the annotation will be completely opaque and 0.0 completely transparent.
         as_type: string
-            Specify either "CV" (default) or "PV" to indicate the return type of the annotated
+            Specify either "CV" or "PV" (default) to indicate the return type of the annotated
             image. If "CV", then an ndarray in the normal opencv format is returned.
             If "PV", then a new pyvision image is returned with the annotations baked-in.
 
@@ -174,8 +168,7 @@ class Image(object):
         replacing those pixels in the image with the corresponding non-zero pixels
         in the annotation data.
 
-        Return type is either an opencv ndarray (default) or a pyvision image
-        if as_type == "PV"
+        Return type is either an opencv ndarray or a pyvision image depending on as_type.
         """
         # TODO: What if self.data is a floating point image and the annotations
         # are uint8 BGR? We should probably call a normalizing routine of some
@@ -376,6 +369,49 @@ class Image(object):
             pix = np.nonzero((self.annotation_data == transparency).all(axis=2))
             self.annotation_data[pix] = self.annotation_transparency
 
+    def annotate_inset_image(self, inset_image, pos, size=None):
+        """
+        On the annotation layer, composites another image, typically a thumbnail or other graphic,
+        at the specified inset position and size. This is a way that an icon image could be drawn
+        to a specific location as an annotation, or for an inset graphic like a performance meter,
+        to be drawn as an inset onto a corner of the image, etc.
+
+        Parameters
+        ----------
+        inset_image:    A pyvision image to be drawn as an annotation on the current image. This may be
+                        a single channel or 3 channel image.
+        pos:            The (x, y) coordinates, relative to the current image, where the top-left corner
+                        of the inset image will be placed.
+        size:           The (width, height) of the inset image in pixels. The inset image will be resized
+                        to this specified size before drawing it to the annotation layer. Specify None
+                        if no resizing is required of the inset image.
+
+        Note:
+        -----
+        The pixels from the inset image will replace whatever is already at that location in the annotation
+        layer. Thus, the transparency color already defined for the current image will apply to the
+        inset image as well. The inset image will be subject to the same alpha-blending as the other annotations.
+        """
+        if size is not None:
+            if inset_image.size != size:
+                inset_image = inset_image.resize(size, as_type="PV")
+        else:
+            size = inset_image.size
+
+        cv_tile = inset_image.data
+        roi = Rect(pos[0], pos[1], size[0], size[1])
+        depth = cv_tile.shape[-1] if len(cv_tile.shape) == 3 else 1
+
+        if depth == 1:
+            cv_tile_bgr = cv2.cvtColor(cv_tile, cv2.COLOR_GRAY2BGR)
+        else:
+            cv_tile_bgr = cv_tile
+
+        # copy pixels of tile onto appropriate location in annotation image
+        dest = self.annotation_data
+        (minx, miny, maxx, maxy) = integer_bounds(roi)
+        dest[miny:(maxy+1), minx:(maxx+1), :] = cv_tile_bgr
+
     def _draw_segments(self, simple_shape, color, *args, **kwargs):
         """
         Internal method for drawing a "simple" shapely geometric object,
@@ -464,7 +500,7 @@ class Image(object):
         crop_image.metadata["crop_bounds"] = (minx, miny, maxx, maxy)
         return crop_image
 
-    def resize(self, new_size, keep_aspect=False, as_type="CV"):
+    def resize(self, new_size, keep_aspect=False, as_type="PV"):
         """
         Returns a copy of the image after resizing to a new size.
 
@@ -476,13 +512,14 @@ class Image(object):
             ratio, which may require borders "letterboxing" to be introduced.
             Default is False.
         as_type: str in ("CV","PV")
-            If as_type is "CV" (default), then the returned image is an opencv
-            format ndarray. If "PV", then a pyvision image is returned.
+            If as_type is "CV", then the returned image is an opencv
+            format ndarray. If "PV" (default), then a pyvision image is returned.
 
         Returns
         -------
-        An opnecv ndarray representing the resized image by default, or a pyvision
-        image if as_type == "PV"
+        An opencv or pyvision image representing the resized image depending on as_type.
+        If the return is a pyvision image, there will also be a .metadata field "original_size"
+        that stores the original size of the image.
         """
         if keep_aspect:
             # Find the scale
@@ -502,7 +539,9 @@ class Image(object):
             new = cv2.resize(self.data, new_size)
 
         if as_type == "PV":
-            return Image(new)
+            new_image = Image(new)
+            new_image.metadata["original_size"] = self.size
+            return new_image
         else:
             return new
 
@@ -552,7 +591,7 @@ class Image(object):
         if not window_title:
             window_title = self.desc
 
-        img_array = self.as_annotated(alpha=annotations_opacity) if annotations \
+        img_array = self.as_annotated(alpha=annotations_opacity, as_type="CV") if annotations \
             else self.data.copy()
         # optional resize logic here?
 
@@ -607,5 +646,5 @@ class Image(object):
             If True (default) then the annotated version of the image will be saved.
         All other args and kwargs are passed on to cv2.imwrite
         """
-        img_array = self.as_annotated() if as_annotated else self.data
+        img_array = self.as_annotated(as_type="CV") if as_annotated else self.data
         cv2.imwrite(filename, img_array, *args, **kwargs)

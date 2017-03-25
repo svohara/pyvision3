@@ -134,7 +134,7 @@ class VideoInterface(object):
         self.reset()
         print("Completed.")
 
-    def play(self, window="Pyvision Video", pos=None, delay=20,
+    def play(self, window_title="Pyvision Video", pos=None, delay=20,
              annotate=True, image_buffer=None, start_frame=None, end_frame=None,
              on_new_frame=None, **kwargs):
         """
@@ -146,7 +146,7 @@ class VideoInterface(object):
 
         Parameters
         ----------
-        window: string
+        window_title: string
             The window name used to display the video. If None,
             then the video won't be shown, but on_new_frame will be called at
             each frame.
@@ -212,8 +212,8 @@ class VideoInterface(object):
                 img.annotate_text(txt, (10, 10), color=(255, 255, 255), bg_color=(0, 0, 0),
                                   font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1)
 
-            if window is not None:
-                img.show(window_title=window, highgui=True, pos=pos, delay=1, annotations_opacity=1.0)
+            if window_title is not None:
+                img.show(window_title=window_title, highgui=True, pos=pos, delay=1, annotations_opacity=1.0)
 
             if on_new_frame is not None:
                 on_new_frame(img, self.current_frame_num, key=key,
@@ -223,8 +223,8 @@ class VideoInterface(object):
             if key == 'q':
                 break  # user selected quit playback
 
-        if window:
-            cv2.destroyWindow(window)
+        if window_title:
+            cv2.destroyWindow(window_title)
 
         return self.current_frame_num
 

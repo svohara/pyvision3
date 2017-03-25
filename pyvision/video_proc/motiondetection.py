@@ -97,7 +97,7 @@ class MotionDetector(object):
             raise ValueError("Unknown Background Subtraction Method specified.")
                   
     def _compute_contours(self):
-        mask_array = self._fgMask.as_grayscale()
+        mask_array = self._fgMask.as_grayscale(as_type="CV")
         _, contours, _ = cv2.findContours(mask_array, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         self._contours = contours
             
@@ -166,7 +166,7 @@ class MotionDetector(object):
             self._annotateImg = self._image_buffer.last()
 
         mask = self._bgSubtract.foreground_mask()
-        cv_binary = mask.as_grayscale()
+        cv_binary = mask.as_grayscale(as_type="CV")
 
         # morphology
         cv_binary = cv2.blur(cv_binary, (5, 5))
@@ -230,7 +230,7 @@ class MotionDetector(object):
             return None
         
         # binary mask selecting foreground regions
-        mask = self._fgMask.as_grayscale()
+        mask = self._fgMask.as_grayscale(as_type="CV")
         
         # full color source image
         image = self._annotateImg.data

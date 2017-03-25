@@ -11,3 +11,7 @@ class OutOfBoundsError(ValueError):
 
 class InvalidImageFile(ValueError):
     pass
+
+
+class ImageAnnotationError(ValueError):
+    pass

@@ -5,9 +5,11 @@ Created on Dec 26, 2015
 
 import pyvision as pv3
 
+
 def play_webcam(cam_num=0):
     vid = pv3.Video(cam_num)
     vid.play(delay=0)  # start in a paused state
+
 
 def play_sample_mov():
     vid = pv3.Video(pv3.VID_PRIUS)

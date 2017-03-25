@@ -50,7 +50,7 @@ def demo():
     # md = md_factory_n_frame_diff()
     # md = md_factory_median()
 
-    vid.play(window=None, annotate=False,
+    vid.play(window_title=None, annotate=False,
              start_frame=100, end_frame=1000,
              on_new_frame=each_frame, motion=md)
 

@@ -1,7 +1,7 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
-__version__ = "0.13"
+__version__ = "0.14"
 from .constants import *
 from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
