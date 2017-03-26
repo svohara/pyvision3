@@ -1,11 +1,11 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
-__version__ = "0.14"
+__version__ = "0.15"
 from .constants import *
 from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
-from .image import Image
+from .image import Image, matplot_fig_to_image
 from .affine import AffineTransformer, AffineRotation, AffineTranslate
 from .imagebuffer import ImageBuffer
 from .video import VideoInterface, Video, VideoFromFileList, VideoFromDir, VideoFromImageStack

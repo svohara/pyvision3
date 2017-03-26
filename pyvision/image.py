@@ -16,7 +16,7 @@ onto the image array itself.
 
 import cv2
 import numpy as np
-
+import io
 try:
     import matplotlib.pyplot as plot
 except ImportError:
@@ -386,7 +386,7 @@ class Image(object):
                         to this specified size before drawing it to the annotation layer. Specify None
                         if no resizing is required of the inset image.
 
-        Note:
+        Note
         -----
         The pixels from the inset image will replace whatever is already at that location in the annotation
         layer. Thus, the transparency color already defined for the current image will apply to the
@@ -648,3 +648,25 @@ class Image(object):
         """
         img_array = self.as_annotated(as_type="CV") if as_annotated else self.data
         cv2.imwrite(filename, img_array, *args, **kwargs)
+
+
+def matplot_fig_to_image(fig):
+    """
+    Converts a matplotlib figure into a pyvision image
+
+    Parameters
+    ----------
+    fig:    a matplotlib figure
+
+    Returns
+    -------
+    a pyvision image, the width/height of the image are determined
+    by the matplotlib figure size (in inches) times the specified dpi (dots per inch),
+    which can be set upon figure creation.
+    """
+    buff = io.BytesIO()
+    fig.savefig(buff, format='png', transparent=False, facecolor='white')
+    arr = np.asarray(buff.getbuffer())
+    img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
+    plot.close(fig)
+    return Image(img)
