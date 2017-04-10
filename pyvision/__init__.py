@@ -1,7 +1,8 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
-__version__ = "0.15"
+__version__ = "0.16"
+
 from .constants import *
 from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
@@ -20,4 +21,6 @@ from pyvision.video_proc.motiondetection import \
 from pyvision.dataset_tools.crops import crop_regions, crop_negative_regions, random_rect_gen
 from pyvision.dataset_tools.tile_selection import TileSelector, \
     tiles_from_dir, tiles_from_files, tiles_from_vid
+from pyvision.dataset_tools.capture_clicks import CaptureClicks
+
 
