@@ -1,37 +1,39 @@
 """
 Created on Oct 31, 2011
 @author: bolme and sohara
-Original version by David Bolme.
+Original version by Stephen O'Hara.
 Modified 2014 by Stephen O'Hara to support additional capabilities,
 and an addition of an interface to capture polygons.
 Modified 2017 by Stephen O'Hara to forward port to Pyvision3, PEP8 compliance
 """
 import pyvision as pv3
+import shapely.geometry as sg
 import cv2
 
 
-def null_callback(*args, **kwargs):
-    pass
-
-
-class CaptureClicks:
+class CapturePolygons(pv3.CaptureClicks):
     """
-    This object handles the data management and display of the capture clicks window.
+    This object handles the data management and display of the capture polygons window.
     """
 
-    def __init__(self, im, default_points=None, keep_window_open=False,
-                 window="PyVision Capture Points", pos=None):
+    def __init__(self, im, default_polygons=None, keep_window_open=False,
+                 window="PyVision Capture Polygons", pos=None):
         """
         Initialize the data.
         """
-        self.window = window
-        self.im = im
-        self.keep_window_open = keep_window_open
-        self._user_quit = False
-        self.pos = pos  # position of window
-        self.current_points = []
-        self.default_points = [] if default_points is None else default_points
-        self._show_help = True
+        super().__init__(im, default_points=[], keep_window_open=keep_window_open, window=window, pos=pos)
+
+        # polygons that were input and must always show
+        self.default_polygons = [] if default_polygons is None else default_polygons
+        self.current_polygons = []  # completed, closed polygons
+
+    def _close_polygon(self):
+        if len(self.current_points) >= 3:
+            # must have 3 points to close the polygon
+            new_poly = sg.Polygon(self.current_points)
+            self.current_polygons.append(new_poly)
+            self.current_points = []
+        return
 
     def _clear_last_point(self):
         if self.current_points:
@@ -40,11 +42,12 @@ class CaptureClicks:
 
     @staticmethod
     def _draw_instructions(canvas):
-        canvas.annotate_rect((2, 2), (320, 70), color=pv3.RGB_BLUE, thickness=-1)
+        canvas.annotate_rect((2, 2), (320, 80), color=pv3.RGB_BLUE, thickness=-1)
 
         text_messages = ["Click anywhere in the image to select a point.",
                          "Press 'r' to reset.",
                          "Press 'x' to delete the recent point.",
+                         "Press 'c' to close the in-progress polygon.",
                          "Press the space bar when finished.",
                          "Press 'h' to toggle display of this help text."]
 
@@ -54,10 +57,13 @@ class CaptureClicks:
                                  font_scale=0.5)
 
     @staticmethod
-    def _draw_points(canvas, points, color=pv3.RGB_YELLOW):
-        for idx, pt in enumerate(points):
-            canvas.annotate_point(pt, color=color)
-            canvas.annotate_text(str(idx+1), pt, color=color)
+    def _draw_polys(canvas, polygons, color=pv3.RGB_YELLOW):
+        for idx, poly in enumerate(polygons):
+            kx, ky = poly.exterior.coords[0]
+            key_point = int(kx), int(ky)
+            canvas.annotate_shape(poly, color=color, thickness=3, fill_color=None)
+            canvas.annotate_point(key_point, color=color)
+            canvas.annotate_text(str(idx + 1), key_point, color=color)
 
     def _update_image(self):
         """
@@ -66,13 +72,19 @@ class CaptureClicks:
         canvas = self.im.copy()
         if self._show_help:
             self._draw_instructions(canvas)
-
-        if self.default_points:
-            self._draw_points(canvas, self.default_points, color=pv3.RGB_YELLOW)
+        self._draw_polys(canvas, self.default_polygons, color=pv3.RGB_YELLOW)
+        self._draw_polys(canvas, self.current_polygons, color=pv3.RGB_RED)
 
         if self.current_points:
-            self._draw_points(canvas, self.current_points, color=pv3.RGB_RED)
+            for pt in self.current_points:
+                canvas.annotate_point(pt, color=pv3.RGB_BLUE)
 
+        if len(self.current_points) > 1:
+            # draw lines connecting the in-progress points of a new polygon
+            for idx in range(1, len(self.current_points)):
+                pt1 = self.current_points[idx]
+                pt2 = self.current_points[idx - 1]
+                canvas.annotate_line(pt1, pt2, color=pv3.RGB_BLUE, thickness=2)
         self.canvas = canvas
 
     def display(self):
@@ -101,6 +113,9 @@ class CaptureClicks:
                 self._user_quit = True
                 break
 
+            if key_press == ord('c'):
+                self._close_polygon()
+
             if key_press == ord('x'):
                 self._clear_last_point()
 
@@ -110,20 +125,12 @@ class CaptureClicks:
         if not self.keep_window_open:
             cv2.destroyWindow(self.window)
 
-        all_points = self.default_points + self.current_points
-        return all_points
+        all_polys = self.default_polygons + self.current_polygons
+        return all_polys
 
     def reset(self):
         """
         Clear the points and start over.
         """
         self.current_points = []
-
-    def mouse_callback(self, event, x, y, flags, param):
-        """
-        Call back function for mouse events.
-        """
-        if event in [cv2.EVENT_LBUTTONDOWN]:
-            point = (x, y)
-            self.current_points.append(point)
-
+        self.current_polygons = []

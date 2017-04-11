@@ -1,7 +1,7 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
-__version__ = "0.16"
+__version__ = "0.17"
 
 from .constants import *
 from .pv_exceptions import *
@@ -22,5 +22,7 @@ from pyvision.dataset_tools.crops import crop_regions, crop_negative_regions, ra
 from pyvision.dataset_tools.tile_selection import TileSelector, \
     tiles_from_dir, tiles_from_files, tiles_from_vid
 from pyvision.dataset_tools.capture_clicks import CaptureClicks
+from pyvision.dataset_tools.capture_polygons import CapturePolygons
+
 
 
