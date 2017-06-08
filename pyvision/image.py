@@ -81,15 +81,22 @@ class Image(object):
         img4 = pv3.Image( np.zeros( (480,640), dtype='uint8' ) )
         """
         self.desc = desc
+        # metadata dictionary can be used to pass arbitrary info with the image
+        self.metadata = {}
+
         if isinstance(source, np.ndarray):
             self.data = source
+            self.metadata['source'] = "np.ndarray"
         elif type(source) == str:
             self.data = cv2.imread(source, *args, **kwargs)
+            self.metadata['source'] = "file"
+            self.metadata['filename'] = source
         else:
             # assume a file object
             buf = source.read()
             x = np.fromstring(buf, dtype='uint8')
             self.data = cv2.imdecode(x, cv2.IMREAD_UNCHANGED)
+            self.metadata['source'] = "file object or buffer"
 
         self.height, self.width = self.data.shape[0:2]
         self.size = (self.width, self.height)
@@ -98,9 +105,6 @@ class Image(object):
         # Annotation data is a separate BGR image array.
         self.annotation_data = np.zeros((self.height, self.width, 3), dtype="uint8")+1
         self.annotation_transparency = (1, 1, 1)
-
-        # metadata dictionary can be used to pass arbitrary info with the image
-        self.metadata = {}
 
     def __str__(self):
         txt = "Pyvision3 Image: {}".format(self.desc)

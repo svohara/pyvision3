@@ -1,7 +1,7 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
-__version__ = "0.17"
+__version__ = "0.18"
 
 from .constants import *
 from .pv_exceptions import *

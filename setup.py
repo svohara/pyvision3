@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="pyvision3",
-    version="0.17",
+    version="0.18",
     packages=find_packages(),
     url="https://github.com/svohara/pyvision3",
     license="MIT",
