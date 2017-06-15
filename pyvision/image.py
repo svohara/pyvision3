@@ -251,7 +251,7 @@ class Image(object):
         point:  tuple (int: x, int: y) or shapely Point object
         color:  tuple (r,g,b)
         """
-        pt = (int(point.x), int(point.y)) if isinstance(point, sg.point.Point) else point
+        pt = (int(point.x), int(point.y)) if isinstance(point, sg.point.Point) else tuple(point)
         self.annotate_circle(pt, 3, color, thickness=-1)
 
     def annotate_circle(self, ctr, radius, color=(255, 0, 0), *args, **kwargs):
@@ -291,7 +291,7 @@ class Image(object):
         used to control line thickness and style
         """
         c = self._fix_color_tuple(color)
-        cv2.line(self.annotation_data, pt1, pt2, c, *args, **kwargs)
+        cv2.line(self.annotation_data, tuple(pt1), tuple(pt2), c, *args, **kwargs)
 
     def annotate_rect(self, pt1, pt2, color=(255, 0, 0), *args, **kwargs):
         """
@@ -314,7 +314,7 @@ class Image(object):
         pv3.Rect(...) to create it), then use the annotate_shape method instead.
         """
         c = self._fix_color_tuple(color)
-        cv2.rectangle(self.annotation_data, pt1, pt2, color=c, *args, **kwargs)
+        cv2.rectangle(self.annotation_data, tuple(pt1), tuple(pt2), color=c, *args, **kwargs)
 
     def annotate_text(self, txt, point, color=(0, 0, 0), bg_color=None,
                       font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1, *args, **kwargs):
@@ -349,7 +349,7 @@ class Image(object):
             point2 = (point1[0] + w + 2, point1[1] - h - 2)
             self.annotate_rect(point1, point2, color=bg_color, thickness=-1)
 
-        cv2.putText(self.annotation_data, txt, point, fontFace=font_face,
+        cv2.putText(self.annotation_data, txt, tuple(point), fontFace=font_face,
                     fontScale=font_scale, color=c, *args, **kwargs)
 
     def annotate_mask(self, mask_img, transparency=(0, 0, 0)):
