@@ -41,7 +41,7 @@ class ImageMontage(object):
         by_row: boolean
             If true, the image tiles are placed in row-major order, that is, one row of the montage is filled
             before moving to the next. If false, then column order is used instead.
-        labels: list<str>
+        labels: list<str>, tuple<str>, or 'index'
             Used to show a label at the lower left corner of each image in the montage. If this parameter is a list,
             then it should be the same length as len(image_list) and contain the label to be used for the
             corresponding image. If labels == 'index', then the image montage will simply display the index of the
@@ -62,7 +62,7 @@ class ImageMontage(object):
         self._by_row = by_row
         self._txtcolor = (255, 255, 255)
         self._imgPtr = 0
-        self._labels = labels
+        self._labels = tuple(labels) if isinstance(labels, list) else labels
         self._clickHandler = ClickHandler(self)
         self._keep_aspect = keep_aspect
         self._image_positions = []
@@ -225,7 +225,7 @@ class ImageMontage(object):
                     else:
                         self._selected_tiles.append(imgNum)
                     if self._select_handler is not None:
-                        imgLabel = self._labels[imgNum] if type(self._labels) == list else str(imgNum)
+                        imgLabel = self._labels[imgNum] if isinstance(self._labels, tuple) else str(imgNum)
                         self._select_handler(img, imgNum, {"imgLabel":imgLabel})
             return 0
 
@@ -348,7 +348,7 @@ class ImageMontage(object):
         if self._labels == 'index':
             # draw image number in lower left corner, respective to ROI
             lbltext = "%d" % img_num
-        elif type(self._labels) == list:
+        elif isinstance(self._labels, tuple):
             lbltext = str(self._labels[img_num])
         else:
             lbltext = None
