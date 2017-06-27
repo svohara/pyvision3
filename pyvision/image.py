@@ -586,7 +586,8 @@ class Image(object):
         delay: int
             The delay in milliseconds to wait after showing the image. This is passed on
             to cv2.waitKey if highgui is specified as the display. This is useful if
-            showing a sequence of images as if they were a video.
+            showing a sequence of images as if they were a video. If None, then there
+            is no call to cv2.waitkey
         pos: tuple (x,y)
             Used if showing via highgui, this is the window's upper left position on
             the user's screen. Default is None, which means the window will be placed
@@ -610,7 +611,7 @@ class Image(object):
 
             # Display the result
             cv2.imshow(window_title, img_array)
-            key = cv2.waitKey(delay=delay)
+            key = -1 if delay is None else cv2.waitKey(delay=delay)
             del img_array
             return key
         else:

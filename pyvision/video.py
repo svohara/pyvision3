@@ -213,7 +213,7 @@ class VideoInterface(object):
                                   font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1)
 
             if window_title is not None:
-                img.show(window_title=window_title, highgui=True, pos=pos, delay=1, annotations_opacity=1.0)
+                img.show(window_title=window_title, highgui=True, pos=pos, delay=None, annotations_opacity=1.0)
 
             if on_new_frame is not None:
                 on_new_frame(img, self.current_frame_num, key=key,
