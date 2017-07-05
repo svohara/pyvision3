@@ -476,6 +476,7 @@ class Image(object):
         new_data = self.data.copy()
         new_img = Image(new_data)
         new_img.annotation_data = self.annotation_data.copy()
+        new_img.metadata = self.metadata.copy()
         return new_img
 
     def crop(self, rect):
@@ -501,6 +502,7 @@ class Image(object):
         (minx, miny, maxx, maxy) = integer_bounds(rect)
         cropped = self.data[miny:(maxy+1), minx:(maxx+1)].copy()
         crop_image = Image(cropped)
+        crop_image.metadata = self.metadata.copy()
         crop_image.metadata["crop_bounds"] = (minx, miny, maxx, maxy)
         return crop_image
 
@@ -544,6 +546,7 @@ class Image(object):
 
         if as_type == "PV":
             new_image = Image(new)
+            new_image.metadata = self.metadata.copy()
             new_image.metadata["original_size"] = self.size
             return new_image
         else:
