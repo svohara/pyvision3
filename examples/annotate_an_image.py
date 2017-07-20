@@ -41,8 +41,8 @@ def annotation_demo():
 
     # show the image with annotations
     # NOTE: to NOT show the annotations, set annotations=False in the following
-    img.show_annotation(window_title="Mask Layer", highgui=True, delay=1)
-    img.show(window_title="Image Layer", highgui=True, delay=0, annotations_opacity=0.5)
+    # img.show_annotation(window_title="Mask Layer", highgui=True, delay=1)
+    img.show(window_title="Annotated Image", highgui=True, delay=0, annotations_opacity=0.5)
 
 if __name__ == '__main__':
     print("====================================================")
