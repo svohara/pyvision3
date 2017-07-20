@@ -1,8 +1,6 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
-__version__ = "0.22"
-
 from .constants import *
 from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array
@@ -24,5 +22,5 @@ from pyvision.dataset_tools.tile_selection import TileSelector, \
 from pyvision.dataset_tools.capture_clicks import CaptureClicks
 from pyvision.dataset_tools.capture_polygons import CapturePolygons
 
-
+__version__ = ".".join([str(x) for x in VERSION_TUPLE])
 

@@ -8,7 +8,13 @@ import inspect
 from pkg_resources import resource_filename
 import pyvision as pv3
 import shapely.geometry as sg
+import json
 
+
+INFO_JSON_FILE = resource_filename('pyvision', os.path.join('data', 'project_info.json'))
+with open(INFO_JSON_FILE, 'r') as infile:
+    _info = json.load(infile)
+VERSION_TUPLE = _info['version_tuple']
 
 PACKAGE_DIR = os.path.dirname(inspect.getfile(pv3))
 

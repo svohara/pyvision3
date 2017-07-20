@@ -1,0 +1,9 @@
+{
+  "description": "Facilitates computer vision research and prototyping using python and openCV",
+  "version_tuple": [0, 0, 23],
+  "author": "Stephen O'Hara",
+  "created":  "2015 December",
+  "email": "svohara@gmail.com",
+  "url": "https://github.com/svohara/pyvision3",
+  "license": "MIT"
+}

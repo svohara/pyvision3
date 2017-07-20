@@ -103,8 +103,7 @@ class Image(object):
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
 
         # Annotation data is a separate BGR image array.
-        self.annotation_data = np.zeros((self.height, self.width, 3), dtype="uint8")+1
-        self.annotation_transparency = (1, 1, 1)
+        self.annotation_data = self.data.copy() if self.nchannels == 3 else cv2.cvtColor(self.data, cv2.COLOR_GRAY2BGR)
 
     def __str__(self):
         txt = "Pyvision3 Image: {}".format(self.desc)
@@ -139,16 +138,6 @@ class Image(object):
         else:
             return Image(img_gray)
 
-    def set_annotation_transparency(self, color=(1, 1, 1)):
-        """
-        Sets the transparent color value in the annotations mask.
-
-        Parameters
-        ----------
-        color:  (B, G, R) color tuple, default is (1, 1, 1).
-        """
-        self.annotation_transparency = color
-
     def as_annotated(self, alpha=0.5, as_type="PV"):
         """
         Provides an array which represents the merging of the image data
@@ -182,13 +171,12 @@ class Image(object):
         else:
             tmp_img = self.data.copy()
 
-        if self.annotation_transparency is not None:
-            pixs = np.nonzero((self.annotation_data != self.annotation_transparency).any(axis=2))
-            tmp_img[pixs] = ((1.0 - alpha) * tmp_img[pixs] +
-                            alpha * self.annotation_data[pixs]).astype('uint8')
-        else:
-            tmp_img = ((1.0 - alpha) * tmp_img + alpha * self.annotation_data).astype('uint8')
-            # tmp_img = cv2.addWeighted(tmp_img, 1.0-alpha, self.annotation_data, alpha, 0.0)
+        # this works because the annotation_data was initialized as a copy of the
+        # source data. Annotations draw on this copy, and when we alpha-blend, those pixels
+        # that were not changed by an annotation will blend back to full intensity.
+        # i.e., if there were no annotations on pixel x, (1-alpha)*I(x) + (alpha)*A(x) = I(x)
+        # because A(x) == I(x) where not otherwise annotated.
+        tmp_img = cv2.addWeighted(tmp_img, 1.0-alpha, self.annotation_data, alpha, 0.0)
 
         if as_type == "PV":
             return Image(tmp_img)
@@ -361,17 +349,18 @@ class Image(object):
         Parameters
         ----------
         mask_img:       ndarray (3 channel, uint8 image, same size as self.data, BGR color order)
-        transparency:   pixels in the input mask_img that match this color will be set to the
-                        image's defined transparency color. Use None for no transparency setting,
-                        which is good when you know that the mask_img uses the same transparency value
-                        as this image's self.annotation_transparency value. Default is black (0,0,0).
+        transparency:   pixels in the input mask_img that match this color will be set as transparent,
+                        and thus the background image's pixel value will be used instead.
+                        None means there are no fully transparent pixels. Default is black (0, 0, 0),
+                        so anything black in the mask_img will be replaced with the corresponding color
+                        value from the underlying image.
         """
         if mask_img.shape[0:2] != self.data.shape[0:2]:
             raise ImageAnnotationError("Invalid mask. Must be same (w,h) as image.")
         self.annotation_data = mask_img.copy()
         if transparency is not None:
             pix = np.nonzero((self.annotation_data == transparency).all(axis=2))
-            self.annotation_data[pix] = self.annotation_transparency
+            self.annotation_data[pix] = self.data[pix]
 
     def annotate_inset_image(self, inset_image, pos, size=None):
         """
@@ -438,18 +427,6 @@ class Image(object):
             pt2 = points[i]
             self.annotate_line(pt1, pt2, color, *args, **kwargs)
 
-    def _check_color_transparent(self, color):
-        """
-        Helper function to alert user if the selected annotation color is the same as
-        the current transparency color of the annotation mask image.
-
-        Parameters
-        ----------
-        color:  (r, g, b) tuple.
-        """
-        if color == self.annotation_transparency:
-            raise ImageAnnotationError("Selected annotation color {} is transparent.".format(color))
-
     def _fix_color_tuple(self, color):
         """
         Puts the color tuple (r,g,b) into (b,g,r) order.
@@ -463,7 +440,6 @@ class Image(object):
         tuple (b,g,r)
         """
         (r, g, b) = color
-        self._check_color_transparent(color)
         return (b, g, r)
 
     def copy(self):
