@@ -31,7 +31,7 @@ class ImageMontage(object):
         Parameters
         ----------
         image_list: list
-            A list of pyvision images that you wish to display as a montage.
+            A list of pyvision3 images that you wish to display as a montage.
         layout: tuple (int, int)
             (rows,cols) that indicates the number of tiles to show in a single montage page, oriented in a grid.
         tile_size: tuple (int, int)
@@ -312,7 +312,7 @@ class ImageMontage(object):
 
         Parameters
         ----------
-        img: pyvision Image
+        img: pyvision3 Image
             The image from which a thumbnail will be composited onto the montage
         pos: tuple
             A tuple (row,col) for the position in the montage layout
@@ -434,7 +434,7 @@ class VideoMontage(VideoInterface):
         Parameters
         ----------
         video_dict: A dictionary of videos to display in the montage. The keys are the video labels, and
-            the values are objects adhering to the pyvision video interface. (pv.Video, pv.VideoFromImages, etc.)
+            the values are objects adhering to the pyvision3 video interface. (pv.Video, pv.VideoFromImages, etc.)
         layout: A tuple of (rows,cols) to indicate the layout of the montage. Videos will be separated by
             a one-pixel gutter. Videos will be drawn to the montage such that a row is filled up prior to moving
             to the next. The videos are drawn to the montage in the sorted order of the video keys in the dictionary.

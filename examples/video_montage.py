@@ -1,7 +1,7 @@
 """
 Demonstration of a video montage
 """
-import pyvision as pv3
+import pyvision3 as pv3
 
 vid1 = pv3.Video(pv3.VID_PRIUS)
 vid2 = pv3.Video(pv3.VID_PRIUS)

@@ -3,7 +3,7 @@ Demonstration of creating a plot using matplotlib
 and using it as an overlay on a pyvision image.
 """
 
-import pyvision as pv3
+import pyvision3 as pv3
 import cv2
 import numpy as np
 import io

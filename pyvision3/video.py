@@ -24,7 +24,7 @@ analysis pipelines.
 # pylint: disable=E1101
 
 import cv2
-import pyvision as pv3
+import pyvision3 as pv3
 import sys
 import os
 import glob
@@ -33,7 +33,7 @@ import glob
 class VideoInterface(object):
     """
     The common functions required by any object implementing
-    the pyvision Video interface, and implements the common pause-and-play
+    the pyvision3 Video interface, and implements the common pause-and-play
     feature of Videos.
     """
     def __init__(self, size=None):
@@ -63,7 +63,7 @@ class VideoInterface(object):
 
         Returns
         -------
-        The pyvision image at the desired frame number.
+        The pyvision3 image at the desired frame number.
         """
         if self._random_access:
             self.current_frame_num = frame_num
@@ -164,7 +164,7 @@ class VideoInterface(object):
             If True, the image will be annotated with the frame number
             in the upper left corner. Set False for no frame number annotation.
         image_buffer: ImageBuffer
-            An optional pyvision ImageBuffer object to contain the
+            An optional pyvision3 ImageBuffer object to contain the
             most recent frames. This is useful if a buffer is required for background
             subtraction, for example. The buffer contents is directly modified each
             time a new image is captured from the video, and a reference to the buffer
@@ -284,7 +284,7 @@ class VideoInterface(object):
 class Video(VideoInterface):
     """
     A Pyvision Video object makes using and interacting with video
-    streams easier than 'raw' opencv code. A pyvision video object
+    streams easier than 'raw' opencv code. A pyvision3 video object
     is an interable (i.e., for img in vid: ....), and also provides
     a high level "play" method, which plays-back the video, displays
     the frame number as an annotation, and supports a callback function

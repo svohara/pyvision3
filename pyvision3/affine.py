@@ -4,7 +4,7 @@ affine transformations from pyvision images.
 """
 
 import cv2
-import pyvision as pv3
+import pyvision3 as pv3
 import math
 import numpy as np
 
@@ -12,7 +12,7 @@ import numpy as np
 class AffineTransformer(object):
     """
     This class defines a callable object that can be applied to
-    pyvision images to apply an affine or inverse affine transformation.
+    pyvision3 images to apply an affine or inverse affine transformation.
     """
     def __init__(self, affine_matrix, dest_size=None):
         """
@@ -79,7 +79,7 @@ class AffineTransformer(object):
 
         Parameters
         ----------
-        source_img: pyvision image
+        source_img: pyvision3 image
 
         invert: boolean
             If true, the inverse transformation is applied to the source_img
@@ -87,7 +87,7 @@ class AffineTransformer(object):
 
         Returns
         -------
-        A pyvision image resulting from applying the transformation
+        A pyvision3 image resulting from applying the transformation
         to the source_img.
         """
         input_array = source_img.data

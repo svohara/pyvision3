@@ -1,7 +1,7 @@
 """
 Demonstrates using some of the background subtraction methods
 """
-import pyvision as pv3
+import pyvision3 as pv3
 
 
 def demo():

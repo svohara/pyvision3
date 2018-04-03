@@ -1,5 +1,5 @@
 import unittest
-import pyvision as pv3
+import pyvision3 as pv3
 
 
 class TestImageBuffer(unittest.TestCase):

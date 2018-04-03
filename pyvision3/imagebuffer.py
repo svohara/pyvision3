@@ -5,7 +5,7 @@ Modified: Mar 10, 2016
 Author: Stephen O'Hara
 """
 import numpy as np
-import pyvision as pv3
+import pyvision3 as pv3
 
 
 class ImageBuffer:

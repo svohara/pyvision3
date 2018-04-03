@@ -3,7 +3,7 @@ Demonstration of the crop_regions function.
 author: Stephen O'Hara
 created: April 14, 2016
 """
-import pyvision as pv3
+import pyvision3 as pv3
 import shapely.geometry as sg
 
 

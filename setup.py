@@ -2,13 +2,13 @@ from setuptools import setup, find_packages
 import os
 import json
 
-with open(os.path.join('pyvision', 'data', 'project_info.json'), 'r') as infile:
+with open(os.path.join('pyvision3', 'data', 'project_info.json'), 'r') as infile:
     _info = json.load(infile)
 
 _version = ".".join([str(x) for x in _info["version_tuple"]])
 
 setup(
-    name="pyvision",
+    name="pyvision3",
     version=_version,
     packages=find_packages(),
     url=_info["url"],
@@ -18,8 +18,8 @@ setup(
     description=_info["description"],
     package_data={
         # include all files found in the 'data' subdirectory
-        # of the 'pyvision' package
-        'pyvision': ['data/*']
+        # of the 'pyvision3' package
+        'pyvision3': ['data/*']
     },
     test_suite="tests",
     download_url="{}/archive/{}.tar.gz".format(_info["url"], _version),
@@ -49,7 +49,7 @@ setup(
     ],
     python_requires='>=3.4',
     long_description="""
-    A python3 computer vision library that complements OpenCV 3.x to add many useful features for developers
+    A python 3 computer vision library that complements OpenCV 3.x to add many useful features for developers
     and researchers alike. Pyvision provides utilities that help in these core areas: training data preparation,
     displaying results, and applying vision algorithms to video streams.
 

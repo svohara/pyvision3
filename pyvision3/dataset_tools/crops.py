@@ -6,7 +6,7 @@ within the bounds of an image.
 author: Stephen O'Hara
 created: April 14, 2016
 """
-import pyvision as pv3
+import pyvision3 as pv3
 import shapely.geometry as sg
 import shapely.ops as so
 import numpy as np
@@ -21,7 +21,7 @@ def crop_regions(image, shapes, crop_size=None):
 
     Parameters
     ----------
-    image: pyvision image
+    image: pyvision3 image
     shapes: shapely polygons list
         Only the exterior coordinates of the polygons will be
         used to find either the bounding rectangle or the center
@@ -36,7 +36,7 @@ def crop_regions(image, shapes, crop_size=None):
 
     Returns
     -------
-    A list of crops, where each crop is a pyvision image
+    A list of crops, where each crop is a pyvision3 image
     """
 
     if crop_size is not None:
@@ -69,7 +69,7 @@ def crop_negative_regions(image, shapes, crop_size, N=10):
 
     Parameters
     ----------
-    image:  pyvision image
+    image:  pyvision3 image
     shapes: shapely polygons list
         The shapes are the places NOT to crop negative samples from.
     crop_size: (w,h)
@@ -79,7 +79,7 @@ def crop_negative_regions(image, shapes, crop_size, N=10):
 
     Returns
     -------
-    A list of crops, where each is a pyvision image
+    A list of crops, where each is a pyvision3 image
     """
     positive_area = so.cascaded_union(shapes)
     validated_crops = []

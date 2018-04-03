@@ -5,8 +5,8 @@ Modified: Mar 11, 2016
     For compatibility with pyvision 3
 """
 
-import pyvision as pv3
-from pyvision import BG_SUBTRACT_STATIC, BG_SUBTRACT_FRAME_DIFF, \
+import pyvision3 as pv3
+from pyvision3 import BG_SUBTRACT_STATIC, BG_SUBTRACT_FRAME_DIFF, \
     BG_SUBTRACT_MEDIAN, BG_SUBTRACT_APPROX_MEDIAN
 
 import cv2
@@ -71,7 +71,7 @@ class MotionDetector(object):
         self._method = method      
         self._bgSubtract = None  # can't initialize until buffer is full...so done in detect()
         self._contours = []
-        self._annotateImg = None # a pyvision image for annotation motion detections
+        self._annotateImg = None # a pyvision3 image for annotation motion detections
         self._rect_type = rect_type
         self._rect_sigma = rect_sigma
 
@@ -121,7 +121,7 @@ class MotionDetector(object):
 
         Parameters
         ----------
-        img: pyvision image
+        img: pyvision3 image
             An image to be added to the buffer as the most recent image,
             and that triggers the new motion detection. Note that, depending on the
             background subtraction method, this may not be the "key frame" for the
@@ -258,7 +258,7 @@ class MotionDetector(object):
 
         Returns
         -------
-        A list of "tiles", where each tile is a small pyvision Image
+        A list of "tiles", where each tile is a small pyvision3 Image
         representing the clipped area of the annotationImg based on
         the motion detection. Only the foreground pixels are copied, so
         the result are tiles with full-color foreground pixels on the
@@ -404,7 +404,7 @@ class MotionDetector(object):
 
         Parameters
         ----------
-        key_frame: pyvision image or None
+        key_frame: pyvision3 image or None
             if None, then a copy of the internal annotation image will be used,
             otherwise the annotations will be drawn on top of the provided pv image
         rect_color: tuple (r,g,b) for detection rectangles, or None
@@ -440,7 +440,7 @@ class MotionDetector(object):
             for poly in self.convex_hulls():
                 key_frame.annotate_shape(poly, color=convex_hull_color, thickness=1)
 
-        # TODO: Update this after porting OpticFlow and MCFD code to pyvision 3
+        # TODO: Update this after porting OpticFlow and MCFD code to pyvision3 3
         #if (flow_color is not None) and (self._method == pv.BG_SUBTRACT_MCFD):
         #    flow = self._bgSubtract.getOpticalFlow()
         #    flow.annotate_frame(key_frame, type="TRACKING", color=flow_color)

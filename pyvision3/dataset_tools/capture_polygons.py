@@ -6,7 +6,7 @@ Modified 2014 by Stephen O'Hara to support additional capabilities,
 and an addition of an interface to capture polygons.
 Modified 2017 by Stephen O'Hara to forward port to Pyvision3, PEP8 compliance
 """
-import pyvision as pv3
+import pyvision3 as pv3
 import shapely.geometry as sg
 import cv2
 

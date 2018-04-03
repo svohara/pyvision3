@@ -5,7 +5,7 @@ Modified: Mar 11, 2016
     For pyvision3 compatibility.
 """
 import numpy as np
-import pyvision as pv3
+import pyvision3 as pv3
 import math
 # import cv2
 
@@ -18,7 +18,7 @@ BG_SUBTRACT_FRAME_DIFF = "BG_SUBTRACT_FD"       # frame difference
 BG_SUBTRACT_MEDIAN = "BG_SUBTRACT_MM"           # median model
 BG_SUBTRACT_APPROX_MEDIAN = "BG_SUBTRACT_AM"    # approx median
 
-# TODO: Port the motion compensated frame differencer from old pyvision + OpticFlow
+# TODO: Port the motion compensated frame differencer from old pyvision3 + OpticFlow
 
 
 class AbstractBGModel:
@@ -84,7 +84,7 @@ class StaticModel(AbstractBGModel):
         """
         Parameters
         ----------
-        bg_image: pyvision Image
+        bg_image: pyvision3 Image
             The image that will serve as the background model
         """
         if bg_image is None:
@@ -134,7 +134,7 @@ class MedianModel(AbstractBGModel):
         Returns
         -------
         A numpy ndarray representing the gray-scale median values of the image stack.
-        If you want a pyvision image, just wrap the result in pv3.Image(result).
+        If you want a pyvision3 image, just wrap the result in pv3.Image(result).
         """
         self._imageStack = self._image_buffer.as_image_stack_BW()
         medians = np.median(self._imageStack, axis=0)  # median of each pixel jet in stack

@@ -1,4 +1,4 @@
-import pyvision as pv3
+import pyvision3 as pv3
 
 
 def main():

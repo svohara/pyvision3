@@ -5,7 +5,7 @@ created: April 14, 2016
 """
 
 import unittest
-import pyvision as pv3
+import pyvision3 as pv3
 import shapely.geometry as sg
 
 

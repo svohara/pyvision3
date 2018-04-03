@@ -56,7 +56,7 @@ The following are some simple code samples to give you the flavor of the library
 
 ```python
 
-import pyvision as pv3
+import pyvision3 as pv3
 
 #load and display an image
 img = pv3.Image("path/to/somefile.jpg")

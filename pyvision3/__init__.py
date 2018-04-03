@@ -10,17 +10,17 @@ from .imagebuffer import ImageBuffer
 from .video import VideoInterface, Video, VideoFromFileList, VideoFromDir, VideoFromImageStack
 from .montage import ImageMontage, VideoMontage
 
-from pyvision.video_proc.backgroundsubtract import \
+from pyvision3.video_proc.backgroundsubtract import \
     FrameDifferenceModel, MedianModel, ApproximateMedianModel, AbstractBGModel, StaticModel, \
     BG_SUBTRACT_STATIC, BG_SUBTRACT_FRAME_DIFF, BG_SUBTRACT_MEDIAN, BG_SUBTRACT_APPROX_MEDIAN
-from pyvision.video_proc.motiondetection import \
+from pyvision3.video_proc.motiondetection import \
     MotionDetector, MD_BOUNDING_RECTS, MD_STANDARDIZED_RECTS
 
-from pyvision.dataset_tools.crops import crop_regions, crop_negative_regions, random_rect_gen
-from pyvision.dataset_tools.tile_selection import TileSelector, \
+from pyvision3.dataset_tools.crops import crop_regions, crop_negative_regions, random_rect_gen
+from pyvision3.dataset_tools.tile_selection import TileSelector, \
     tiles_from_dir, tiles_from_files, tiles_from_vid
-from pyvision.dataset_tools.capture_clicks import CaptureClicks
-from pyvision.dataset_tools.capture_polygons import CapturePolygons
+from pyvision3.dataset_tools.capture_clicks import CaptureClicks
+from pyvision3.dataset_tools.capture_polygons import CapturePolygons
 
 __version__ = ".".join([str(x) for x in VERSION_TUPLE])
 

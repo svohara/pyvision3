@@ -126,7 +126,7 @@ class Image(object):
         Returns
         -------
         A copy of the image (data only, not annotations) as a single channel opencv numpy array,
-        or, if as_type is "PV", then a pyvision Image wrapped around the same.
+        or, if as_type is "PV", then a pyvision3 Image wrapped around the same.
         """
         if self.nchannels == 3:
             img_gray = cv2.cvtColor(self.data, cv2.COLOR_BGR2GRAY)
@@ -152,7 +152,7 @@ class Image(object):
         as_type: string
             Specify either "CV" or "PV" (default) to indicate the return type of the annotated
             image. If "CV", then an ndarray in the normal opencv format is returned.
-            If "PV", then a new pyvision image is returned with the annotations baked-in.
+            If "PV", then a new pyvision3 image is returned with the annotations baked-in.
 
         Returns
         -------
@@ -161,7 +161,7 @@ class Image(object):
         replacing those pixels in the image with the corresponding non-zero pixels
         in the annotation data.
 
-        Return type is either an opencv ndarray or a pyvision image depending on as_type.
+        Return type is either an opencv ndarray or a pyvision3 image depending on as_type.
         """
         # TODO: What if self.data is a floating point image and the annotations
         # are uint8 BGR? We should probably call a normalizing routine of some
@@ -371,7 +371,7 @@ class Image(object):
 
         Parameters
         ----------
-        inset_image:    A pyvision image to be drawn as an annotation on the current image. This may be
+        inset_image:    A pyvision3 image to be drawn as an annotation on the current image. This may be
                         a single channel or 3 channel image.
         pos:            The (x, y) coordinates, relative to the current image, where the top-left corner
                         of the inset image will be placed.
@@ -446,7 +446,7 @@ class Image(object):
         """
         Returns
         -------
-        Returns a pyvision image which is a 'deep copy' of this image which can be
+        Returns a pyvision3 image which is a 'deep copy' of this image which can be
         freely modified without affecting the source of the copy.
         """
         new_data = self.data.copy()
@@ -458,7 +458,7 @@ class Image(object):
     def crop(self, rect):
         """
         Crops a rectangular region from this image and returns as
-        a new (copied) pyvision image
+        a new (copied) pyvision3 image
 
         Parameters
         ----------
@@ -466,7 +466,7 @@ class Image(object):
 
         Returns
         -------
-        A pyvision image with only the contents of the rectangular area. The .metadata of the
+        A pyvision3 image with only the contents of the rectangular area. The .metadata of the
         returned crop image will have a key added "crop_bounds" with value being a tuple of
         the integer crop coordinates used to generate it (minx, miny, maxx, maxy).
 
@@ -495,12 +495,12 @@ class Image(object):
             Default is False.
         as_type: str in ("CV","PV")
             If as_type is "CV", then the returned image is an opencv
-            format ndarray. If "PV" (default), then a pyvision image is returned.
+            format ndarray. If "PV" (default), then a pyvision3 image is returned.
 
         Returns
         -------
-        An opencv or pyvision image representing the resized image depending on as_type.
-        If the return is a pyvision image, there will also be a .metadata field "original_size"
+        An opencv or pyvision3 image representing the resized image depending on as_type.
+        If the return is a pyvision3 image, there will also be a .metadata field "original_size"
         that stores the original size of the image.
         """
         if keep_aspect:
@@ -636,7 +636,7 @@ class Image(object):
 
 def matplot_fig_to_image(fig):
     """
-    Converts a matplotlib figure into a pyvision image
+    Converts a matplotlib figure into a pyvision3 image
 
     Parameters
     ----------
@@ -644,7 +644,7 @@ def matplot_fig_to_image(fig):
 
     Returns
     -------
-    a pyvision image, the width/height of the image are determined
+    a pyvision3 image, the width/height of the image are determined
     by the matplotlib figure size (in inches) times the specified dpi (dots per inch),
     which can be set upon figure creation.
     """

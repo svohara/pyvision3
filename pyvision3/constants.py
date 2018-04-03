@@ -5,19 +5,19 @@ Created on Dec 18, 2015
 import os
 import inspect
 from pkg_resources import resource_filename
-import pyvision as pv3
+import pyvision3 as pv3
 import shapely.geometry as sg
 import json
 
 
-INFO_JSON_FILE = resource_filename('pyvision', os.path.join('data', 'project_info.json'))
+INFO_JSON_FILE = resource_filename('pyvision3', os.path.join('data', 'project_info.json'))
 with open(INFO_JSON_FILE, 'r') as infile:
     _info = json.load(infile)
 VERSION_TUPLE = _info['version_tuple']
 
 PACKAGE_DIR = os.path.dirname(inspect.getfile(pv3))
 
-# Common RGB colors (for use with pyvision annotations)
+# Common RGB colors (for use with pyvision3 annotations)
 RGB_BLACK = (0, 0, 0)  # not zeros, because that can be confusing with masks
 RGB_GRAY = (128, 128, 128)
 RGB_WHITE = (255, 255, 255)
@@ -69,12 +69,12 @@ BGR_COLORS = {"black": BGR_BLACK, "white": BGR_WHITE, "gray": BGR_GRAY,
 
 #  It's useful to have some built-in constants referring to
 #  sample data files to make demonstrations and tests easy.
-IMG_DRIVEWAY = resource_filename("pyvision", "data/driveway.jpg")
-IMG_PRIUS = resource_filename("pyvision", "data/prius_gray.jpg")
-IMG_SLEEPYCAT = resource_filename("pyvision", "data/sleepycat.jpg")
-IMG_MASK = resource_filename("pyvision", "data/test_mask.tif")
-IMG_MASK_RESULT = resource_filename("pyvision", "data/test_mask_result2.tif")
-VID_PRIUS = resource_filename("pyvision", "data/prius_movie.mov")
+IMG_DRIVEWAY = resource_filename("pyvision3", "data/driveway.jpg")
+IMG_PRIUS = resource_filename("pyvision3", "data/prius_gray.jpg")
+IMG_SLEEPYCAT = resource_filename("pyvision3", "data/sleepycat.jpg")
+IMG_MASK = resource_filename("pyvision3", "data/test_mask.tif")
+IMG_MASK_RESULT = resource_filename("pyvision3", "data/test_mask_result2.tif")
+VID_PRIUS = resource_filename("pyvision3", "data/prius_movie.mov")
 
 # A sample polygon roughly outlining the sleepy cat
 COORDS_SLEEPYCAT = [(285, 460), (408, 323), (545, 368), (561, 352), (530, 280), (645, 184), (714, 240),

@@ -4,7 +4,7 @@ Created on Dec 20, 2015
 @author: sohara
 """
 import shapely.geometry as sg
-import pyvision as pv3
+import pyvision3 as pv3
 
 
 def annotation_demo():

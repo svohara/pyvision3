@@ -75,7 +75,7 @@ def in_bounds(rect, image):
     Parameters
     ----------
     rect: shapely rectangle with integer coordinates, as per this module's Rect() output.
-    image: pyvision image
+    image: pyvision3 image
 
     Returns
     -------

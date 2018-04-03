@@ -1,7 +1,7 @@
 """
 Demonstrates using motion detection on a video
 """
-import pyvision as pv3
+import pyvision3 as pv3
 import numpy as np
 
 

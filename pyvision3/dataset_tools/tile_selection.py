@@ -11,7 +11,7 @@ created: April 15, 2016
 """
 import glob
 import os
-import pyvision as pv3
+import pyvision3 as pv3
 import cv2
 import numpy as np
 
@@ -111,7 +111,7 @@ def tiles_from_files(filenames, labels=None):
     Returns
     -------
     A generator that yields tuples of the form (id_str, tile_image, label_str) where
-    tile_image is a small pyvision image representing the tile, id_str uniquely identifies
+    tile_image is a small pyvision3 image representing the tile, id_str uniquely identifies
     this particular tile, and label_str may be None or a class label/description of some sort.
     """
     if labels is not None:
@@ -161,11 +161,11 @@ def tiles_from_dir(dirname, pattern="*.jpg"):
 
 def tiles_from_vid(pv_video, start_frame=0, end_frame=None):
     """
-    A tile generator from a pyvision video object
+    A tile generator from a pyvision3 video object
 
     Parameters
     ----------
-    pv_video: pyvision video
+    pv_video: pyvision3 video
         You may want to use the size= option in the constructor
         of the video so that tile-sized images are generated
     start_frame: int
