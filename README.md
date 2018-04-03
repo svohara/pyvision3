@@ -42,7 +42,7 @@ Install prerequisites that are not pip-installable:
 
 Then install using pip:
 
-```pip install pyvision```
+```pip install pyvision3```
 
 You may also clone the repo and install in development mode. After cloning, change to the project directory and install via:
 
