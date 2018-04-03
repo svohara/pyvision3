@@ -1,6 +1,5 @@
 """
 Created on Dec 18, 2015
-
 @author: Stephen O'Hara
 """
 import os
