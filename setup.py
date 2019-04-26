@@ -45,7 +45,8 @@ setup(
         "matplotlib>=1.3.1",
         "numpy>=1.8.2",
         "pillow>=2.3.0",
-        "shapely>=1.3.0"
+        "shapely>=1.3.0",
+        "opencv-python"
     ],
     python_requires='>=3.4',
     long_description="""
