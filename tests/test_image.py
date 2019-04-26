@@ -31,10 +31,15 @@ class TestImage(unittest.TestCase):
         print("\nTest Image 'annotate_mask' Method")
         img = pv3.Image(pv3.IMG_DRIVEWAY)
         mask = cv2.imread(pv3.IMG_MASK)
-        mask_target = cv2.imread(pv3.IMG_MASK_RESULT)   # known good result
         img.annotate_mask(mask)
-        masked_image = img.as_annotated()  # what we get
-        self.assertTrue(np.allclose(masked_image.data, mask_target))
+        masked_image = img.as_annotated(alpha=0.5, as_type="CV")  # what we get
+
+        # ensure where mask was black (0,0,0) that masked_image pixels == img pixels
+        self.assertTupleEqual(tuple(masked_image[0, 0, :]), tuple(img[0, 0, :]))
+
+        # ensure where mask is non-zero, we have a correct alpha blend
+        blended_pix = tuple(np.round(0.5*img[140, 190, :] + 0.5*mask[140, 190, :]).astype('uint8'))
+        self.assertTupleEqual(blended_pix, tuple(masked_image[140, 190, :]))
 
     def test_inset(self):
         print("\nTest Image 'annotate_inset_image' Method")
@@ -49,6 +54,7 @@ class TestImage(unittest.TestCase):
         img.annotate_inset_image(inset, (250, 250), size=None)
         self.assertTupleEqual(tuple(img.annotation_data[256, 256, :]), (255, 0, 0))
         self.assertTupleEqual(tuple(img.annotation_data[281, 281, :]), (0, 255, 255))
+
 
 if __name__ == '__main__':
     unittest.main()

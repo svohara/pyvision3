@@ -42,10 +42,11 @@ def demo():
     montage3 = pv3.ImageMontage(neg_crops, layout=(2, 5), tile_size=(150, 150), labels=nc_labels)
     mnt_image_negs = montage3.as_image()
 
-    img.imshow(window_title="Source image and regions")
     mnt_image.show(window_title="Crops from bounding boxes", delay=1, pos=(10, 10))
     mnt_image2.show(window_title="Crops from centroids and fixed size", delay=1, pos=(10, 200))
     mnt_image_negs.show(window_title="Random background crops", delay=0, pos=(10, 400))
+    img.imshow(window_title="Source image and regions")
+
 
 if __name__ == '__main__':
     print("=================================================================")

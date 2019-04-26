@@ -73,7 +73,7 @@ IMG_DRIVEWAY = resource_filename("pyvision3", "data/driveway.jpg")
 IMG_PRIUS = resource_filename("pyvision3", "data/prius_gray.jpg")
 IMG_SLEEPYCAT = resource_filename("pyvision3", "data/sleepycat.jpg")
 IMG_MASK = resource_filename("pyvision3", "data/test_mask.tif")
-IMG_MASK_RESULT = resource_filename("pyvision3", "data/test_mask_result2.tif")
+MASK_RESULT = resource_filename("pyvision3", "data/test_mask_result_ary.npy")
 VID_PRIUS = resource_filename("pyvision3", "data/prius_movie.mov")
 
 # A sample polygon roughly outlining the sleepy cat

@@ -1,6 +1,16 @@
 """
 This is the top-level namespace for the pyvision 3 library
 """
+
+# addressing issues with matplotlib on osx/darwin, conda packaging?
+try:
+    from sys import platform as sys_pf
+    if sys_pf == 'darwin':
+        import matplotlib
+        matplotlib.use("TkAgg")
+except ImportError:
+    print("Optional Matplotlib not installed. Matplotlib integration will not work.")
+
 from .constants import *
 from .pv_exceptions import *
 from .geometry import Point, Rect, CenteredRect, in_bounds, integer_bounds, integer_coords_array

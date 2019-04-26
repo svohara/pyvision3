@@ -4,9 +4,8 @@ and using it as an overlay on a pyvision image.
 """
 
 import pyvision3 as pv3
-import cv2
 import numpy as np
-import io
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -32,7 +31,7 @@ def _plot_data(dat):
     ax1.set_ylim([5, 15])
 
     ax1.tick_params('y', colors='b')
-    ax1.tick_params(axis='x', which='both', bottom='off', top='off', labelbottom='off')
+    ax1.tick_params(axis='x', which='both', bottom=False, top=False, labelbottom=False)
 
     ax2 = ax1.twinx()
     ax2.plot(x_vals, line_vals, 'r-')

@@ -211,13 +211,10 @@ class ImageMontage(object):
 
         pt = Point(x, y)
         if incr_rect.contains(pt):
-            # print "DEBUG: Increment Region"
             return 1
         elif decr_rect.contains(pt):
-            # print "DEBUG: Decrement Region"
             return -1
         else:
-            # print "DEBUG: Neither Region"
             for img, imgNum, rect in self._image_positions:
                 if rect.contains(pt):
                     if imgNum in self._selected_tiles:
