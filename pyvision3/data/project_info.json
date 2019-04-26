@@ -1,6 +1,6 @@
 {
   "description": "Facilitates computer vision research and prototyping using python and openCV",
-  "version_tuple": [0, 1, 4],
+  "version_tuple": [0, 1, 5],
   "author": "Stephen O'Hara",
   "created":  "2015 December",
   "email": "svohara@gmail.com",
