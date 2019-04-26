@@ -22,6 +22,14 @@ class TileSelector(object):
     out of a larger set, using an image montage display.
     """
     def __init__(self, tile_generator, chunk_size=48, layout=(6, 8), tile_size=None):
+        """
+        Constructor
+        :param tile_generator: a tile generator, which yields tuples (tile_id, tile_img, tile_label)
+            with data types (string, pyvision3.Image, string)
+        :param chunk_size: How many tiles to display in a single montage/tile-picker window
+        :param layout: the (rows, cols) of the tiles in the montage
+        :param tile_size: the (width, height) to resize every tile in the montage
+        """
         self.tile_gen = tile_generator
         self.chunk_size = chunk_size
         self.layout = layout
@@ -79,7 +87,7 @@ class TileSelector(object):
 
         # build the montage and display it
         imnt = pv3.ImageMontage(tiles, layout=self.layout, tile_size=tile_size,
-                                labels='index', highlight_selected=True)
+                                labels=labels, highlight_selected=True)
         win_title = "Tile selector: Page {}".format(page_num)
         imnt.show(window_title=win_title)
         cv2.destroyWindow(win_title)

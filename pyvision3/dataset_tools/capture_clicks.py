@@ -87,7 +87,7 @@ class CaptureClicks:
 
         while True:
             self._update_image()
-            key_press = self.canvas.show(self.window, delay=100, annotations_opacity=0.75)
+            key_press = self.canvas.show(self.window, delay=100, annotations_opacity=1.0)
             key_press = key_press % 256
 
             # Handle key press events.
