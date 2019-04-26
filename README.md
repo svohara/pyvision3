@@ -5,9 +5,9 @@ algorithms to video streams.
 
 Training data preparation:
 * Apply affine transformations
-* Label points and polygons in images
-* Generate defined or random crops in images
-* Select good vs. bad tiles in a montage display
+* Draw/create points and polygons in images
+* Generate defined or random rectangular crops/tiles in images
+* Select good vs. bad tiles in a montage "tile picker" display
 
 Displaying results:
 * Easy and powerful image annotations of shapes, lines, text, and overlay masks
