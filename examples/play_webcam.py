@@ -15,6 +15,7 @@ def play_sample_mov():
     vid = pv3.Video(pv3.VID_PRIUS)
     vid.play()
 
+
 if __name__ == '__main__':
     print("=================================================================")
     print("Webcam video will start paused.")

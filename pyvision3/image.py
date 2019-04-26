@@ -382,8 +382,7 @@ class Image(object):
         Note
         -----
         The pixels from the inset image will replace whatever is already at that location in the annotation
-        layer. Thus, the transparency color already defined for the current image will apply to the
-        inset image as well. The inset image will be subject to the same alpha-blending as the other annotations.
+        layer. The inset image will be subject to the same alpha-blending as the other annotations.
         """
         if size is not None:
             if inset_image.size != size:
