@@ -24,7 +24,7 @@ class ImageMontage(object):
     """
 
     def __init__(self, image_list, layout=(2, 4), tile_size=(64, 48), gutter=2, by_row=True, labels='index',
-                 keep_aspect=True, highlight_selected=False):
+                 keep_aspect=True, highlight_selected=False, alpha=0.5):
         """
         Constructor
 
@@ -53,6 +53,9 @@ class ImageMontage(object):
             highlight. This will toggle, such that if an image is clicked a second time, the highlighting
             will be removed. The methods get_highlighted and set_highlighted can be used to set/retrieve the
             images in the montage that are highlighted.
+        alpha: float in (0.0, 1.0)
+            Controls the alpha parameter used when rendering each image in the montage, thus controlling
+            the annotation opacity for the constituent images in the montage. Default is 0.5.
         """
         self._tileSize = tile_size
         self._rows = layout[0]
@@ -69,6 +72,7 @@ class ImageMontage(object):
         self._select_handler = None
         self._highlighted = highlight_selected
         self._selected_tiles = []  # which images have been selected (or clicked) by user
+        self.alpha = alpha
 
         # check if we need to allow for scroll-arrow padding
         if self._rows * self._cols < len(image_list):
@@ -118,7 +122,7 @@ class ImageMontage(object):
                 for col in range(self._cols):
                     if img_ptr > len(self._images) - 1:
                         break
-                    tile = self._images[img_ptr].as_annotated(as_type="PV")
+                    tile = self._images[img_ptr].as_annotated(as_type="PV", alpha=self.alpha)
                     self._composite(tile, (row, col), img_ptr)
                     img_ptr += 1
         else:
@@ -126,7 +130,7 @@ class ImageMontage(object):
                 for row in range(self._rows):
                     if img_ptr > len(self._images) - 1:
                         break
-                    tile = self._images[img_ptr].as_annotated(as_type="PV")
+                    tile = self._images[img_ptr].as_annotated(as_type="PV", alpha=self.alpha)
                     self._composite(tile, (row, col), img_ptr)
                     img_ptr += 1
 
@@ -426,7 +430,7 @@ class VideoMontage(VideoInterface):
     a standard video object.
     """
 
-    def __init__(self, video_dict, layout=(2, 4), tile_size=(64, 48)):
+    def __init__(self, video_dict, layout=(2, 4), tile_size=(64, 48), alpha=0.5):
         """
         Parameters
         ----------
@@ -438,6 +442,7 @@ class VideoMontage(VideoInterface):
         tile_size: The window size to display each video in the montage. If the video frame sizes are larger than
             this size, it will be cropped. If you wish to resize, use the size option in the pv.Video class to have
             the output size of the video resized appropriately.
+        alpha: Used to control the annotations opacity in the constituent montages. Default is 0.5.
         """
         super().__init__(size=None)
         if len(video_dict) < 1:
@@ -447,6 +452,7 @@ class VideoMontage(VideoInterface):
         self.vid_size = tile_size
         self.imgs = {}
         self.stopped = []
+        self.alpha = alpha
 
     def reset(self):
         for key in self.vids:
@@ -482,9 +488,8 @@ class VideoMontage(VideoInterface):
             image_list.append(self.imgs[k])
 
         # create an image montage from the current video frames and advance the frame counter
-        im = ImageMontage(image_list, self.layout, self.vid_size, gutter=2, by_row=True, labels=keys)
+        im = ImageMontage(image_list, self.layout, self.vid_size, gutter=2, by_row=True, labels=keys, alpha=self.alpha)
         self.current_frame = im.as_image()
         self.current_frame_num += 1
 
         return self._get_resized()
-
