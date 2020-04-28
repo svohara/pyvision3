@@ -18,9 +18,9 @@ def annotation_demo():
     img.annotate_point((300, 300))  # default color is red
 
     # annotate text next to the brown point, blue on white background
-    img.annotate_text("Waldo was here", (254, 246),
-                      color=pv3.RGB_BLUE,
-                      bg_color=pv3.RGB_WHITE)
+    img.annotate_text(
+        "Waldo was here", (254, 246), color=pv3.RGB_BLUE, bg_color=pv3.RGB_WHITE
+    )
 
     # complex polygon with an exterior and an interior 'hole'
     exterior = ((50, 50), (25, 125), (50, 200), (200, 200), (200, 50), (50, 50))
@@ -30,21 +30,28 @@ def annotation_demo():
 
     # two concentric circles
     img.annotate_circle((400, 400), 75, color=pv3.RGB_PURPLE, thickness=5)
-    img.annotate_circle((400, 400), 60, color=pv3.RGB_PURPLE, thickness=-1)  # filled circle
+    img.annotate_circle(
+        (400, 400), 60, color=pv3.RGB_PURPLE, thickness=-1
+    )  # filled circle
 
     # a LineString
     lines = sg.LineString(((10, 25), (382, 122), (251, 470)))
     img.annotate_shape(lines, thickness=4, color=pv3.RGB_RED)
 
     # a Rectangle
-    img.annotate_rect((538, 212), (600, 300), color=pv3.RGB_ORANGE, thickness=3)  # -1 for filled
+    img.annotate_rect(
+        (538, 212), (600, 300), color=pv3.RGB_ORANGE, thickness=3
+    )  # -1 for filled
 
     # show the image with annotations
     # NOTE: to NOT show the annotations, set annotations=False in the following
     # img.show_annotation(window_title="Mask Layer", highgui=True, delay=1)
-    img.show(window_title="Annotated Image", highgui=True, delay=0, annotations_opacity=0.5)
+    img.show(
+        window_title="Annotated Image", highgui=True, delay=0, annotations_opacity=0.5
+    )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("====================================================")
     print("Set focus to display window and hit any key to exit.")
     print("====================================================")

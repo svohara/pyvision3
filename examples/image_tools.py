@@ -32,7 +32,7 @@ def demo():
     tiles2 = pv3.crop_negative_regions(img, poly_list, crop_size=(150, 150), N=15)
 
     # combine drawn tiles and random tiles and shuffle together
-    all_tiles = [(idx, tile) for (idx, tile) in enumerate(tiles+tiles2)]
+    all_tiles = [(idx, tile) for (idx, tile) in enumerate(tiles + tiles2)]
     random.shuffle(all_tiles)  # modifies list in-place
 
     print("=================================================================")
@@ -40,8 +40,12 @@ def demo():
     print(" not the random crops...if you can! After selecting the tiles")
     print(" on a page, hit the space bar to go to the next page.")
     print("=================================================================")
-    tile_generator = ((str(id), tile, "label_{}".format(id)) for (id, tile) in all_tiles)
-    ts = pv3.TileSelector(tile_generator, chunk_size=8, layout=(2, 4), tile_size=(150, 150))
+    tile_generator = (
+        (str(id), tile, "label_{}".format(id)) for (id, tile) in all_tiles
+    )
+    ts = pv3.TileSelector(
+        tile_generator, chunk_size=8, layout=(2, 4), tile_size=(150, 150)
+    )
     ts.process_all()
     selected_tiles = sorted(ts.selected)
 

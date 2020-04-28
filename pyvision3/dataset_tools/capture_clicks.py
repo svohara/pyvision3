@@ -19,8 +19,14 @@ class CaptureClicks:
     This object handles the data management and display of the capture clicks window.
     """
 
-    def __init__(self, im, default_points=None, keep_window_open=False,
-                 window="PyVision Capture Points", pos=None):
+    def __init__(
+        self,
+        im,
+        default_points=None,
+        keep_window_open=False,
+        window="PyVision Capture Points",
+        pos=None,
+    ):
         """
         Initialize the data.
         """
@@ -35,29 +41,37 @@ class CaptureClicks:
 
     def _clear_last_point(self):
         if self.current_points:
-            _ = self.current_points.pop()  # remove most recent element from list and discard
+            _ = (
+                self.current_points.pop()
+            )  # remove most recent element from list and discard
         return
 
     @staticmethod
     def _draw_instructions(canvas):
         canvas.annotate_rect((2, 2), (320, 70), color=pv3.RGB_BLUE, thickness=-1)
 
-        text_messages = ["Click anywhere in the image to select a point.",
-                         "Press 'r' to reset.",
-                         "Press 'x' to delete the recent point.",
-                         "Press the space bar when finished.",
-                         "Press 'h' to toggle display of this help text."]
+        text_messages = [
+            "Click anywhere in the image to select a point.",
+            "Press 'r' to reset.",
+            "Press 'x' to delete the recent point.",
+            "Press the space bar when finished.",
+            "Press 'h' to toggle display of this help text.",
+        ]
 
         for idx, txt in enumerate(text_messages):
-            canvas.annotate_text(txt, (10, 10*(idx+1)), color=pv3.RGB_WHITE,
-                                 font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL,
-                                 font_scale=0.5)
+            canvas.annotate_text(
+                txt,
+                (10, 10 * (idx + 1)),
+                color=pv3.RGB_WHITE,
+                font_face=cv2.FONT_HERSHEY_COMPLEX_SMALL,
+                font_scale=0.5,
+            )
 
     @staticmethod
     def _draw_points(canvas, points, color=pv3.RGB_YELLOW):
         for idx, pt in enumerate(points):
             canvas.annotate_point(pt, color=color)
-            canvas.annotate_text(str(idx+1), pt, color=color)
+            canvas.annotate_text(str(idx + 1), pt, color=color)
 
     def _update_image(self):
         """
@@ -87,24 +101,26 @@ class CaptureClicks:
 
         while True:
             self._update_image()
-            key_press = self.canvas.show(self.window, delay=100, annotations_opacity=1.0)
+            key_press = self.canvas.show(
+                self.window, delay=100, annotations_opacity=1.0
+            )
             key_press = key_press % 256
 
             # Handle key press events.
-            if key_press == ord(' '):
+            if key_press == ord(" "):
                 break
 
-            if key_press == ord('h'):
+            if key_press == ord("h"):
                 self._show_help = not self._show_help
 
-            if key_press == ord('q'):
+            if key_press == ord("q"):
                 self._user_quit = True
                 break
 
-            if key_press == ord('x'):
+            if key_press == ord("x"):
                 self._clear_last_point()
 
-            if key_press == ord('r'):
+            if key_press == ord("r"):
                 self.reset()
 
         if not self.keep_window_open:
@@ -126,4 +142,3 @@ class CaptureClicks:
         if event in [cv2.EVENT_LBUTTONDOWN]:
             point = (x, y)
             self.current_points.append(point)
-

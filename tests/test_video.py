@@ -13,7 +13,7 @@ class TestVideo(unittest.TestCase):
 
     def test_video_seek(self):
         print("\nTest Video 'seek_to' Method")
-        vid = pv3.Video(pv3.VID_PRIUS, size=(320,240))
+        vid = pv3.Video(pv3.VID_PRIUS, size=(320, 240))
 
         # seek forward to frame index 200 (201st image)
         # then call next() 10 times
@@ -47,5 +47,6 @@ class TestVideo(unittest.TestCase):
         self.assertTupleEqual(imgA.size, (320, 240))
         self.assertTrue(np.all(imgA.data == X[30, :, :]))
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

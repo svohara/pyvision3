@@ -26,27 +26,27 @@ class ImageBuffer:
         self._data = [None for _ in range(N)]
         self._count = 0
         self._max = N
-            
+
     def __getitem__(self, key):
         return self._data[key]
-        
+
     def __len__(self):
         """
         This is a fixed-sized ring buffer, so length is always the number
         of images that can be stored in the buffer (as initialized with Nframes)
         """
         return self._max
-    
+
     def is_full(self):
         if self._count == self._max:
             return True
         else:
             return False
-            
+
     def clear(self):
         self._data = [None for _ in range(self._max)]
         self._count = 0
-            
+
     def get_count(self):
         """
         Note that get_count() differs from __len__() in that this method returns the number of
@@ -54,7 +54,7 @@ class ImageBuffer:
         defined as the number of images the buffer is allowed to store.
         """
         return self._count
-    
+
     def get_data(self):
         return self._data
 
@@ -63,11 +63,11 @@ class ImageBuffer:
 
     def last(self):
         return self._data[-1]
-    
+
     def middle(self):
-        mid = int(self._count/2)
+        mid = int(self._count / 2)
         return self._data[mid]
-            
+
     def add(self, image):
         """
         add an image to the buffer, will kick out the oldest of the buffer is full
@@ -78,7 +78,7 @@ class ImageBuffer:
         self._count += 1
         if self._count > self._max:
             self._count = self._max
-            
+
     def fill(self, source):
         """
         If buffer is empty, you can use this function to spool off the first
@@ -115,13 +115,13 @@ class ImageBuffer:
         of each image.        
         """
         if size is None:
-            img0 = self[0]        
+            img0 = self[0]
             (w, h) = img0.size
         else:
             (w, h) = size
-            
+
         f = self.get_count()
-        stack = np.zeros((f, h, w), dtype='uint8')
+        stack = np.zeros((f, h, w), dtype="uint8")
         for i, img in enumerate(self._data):
             # if img is not (w,h) in size, then resize first
             sz = img.size
@@ -131,21 +131,21 @@ class ImageBuffer:
             else:
                 mat = img.as_grayscale(as_type="CV")
             stack[i, :, :] = mat
-            
+
         return stack
-    
+
     def as_montage(self, layout, tile_size=None, **kwargs):
         (w, h) = self[0].size
         if tile_size is None:
-            tw = w//5
-            th = h//5
+            tw = w // 5
+            th = h // 5
             tw = 32 if tw < 32 else tw
             th = 24 if th < 24 else th
             tile_size = (tw, th)
-            
+
         im = pv3.ImageMontage(self._data, layout=layout, tile_size=tile_size, **kwargs)
         return im
-    
+
     def show(self, N=10, window_title="Image Buffer", pos=None, delay=0):
         """
         @param N: The number of images in the buffer to display at once
@@ -155,7 +155,7 @@ class ImageBuffer:
         """
         if self[0] is None:
             return
-        
+
         if N <= self._count:
             im = self.as_montage(layout=(1, N))
         else:

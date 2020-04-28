@@ -85,7 +85,7 @@ def crop_negative_regions(image, shapes, crop_size, N=10):
     validated_crops = []
 
     while len(validated_crops) < N:
-        rect_gen = random_rect_gen(image.size, crop_size, N=N*2)
+        rect_gen = random_rect_gen(image.size, crop_size, N=N * 2)
         for rect in rect_gen:
             if not rect.intersects(positive_area):
                 validated_crops.append(image.crop(rect))
@@ -120,8 +120,8 @@ def random_rect_gen(image_size, crop_size, N=1):
     offset_x = c_w // 2
     offset_y = c_h // 2
 
-    rand_xs = np.random.randint(offset_x, high=img_w-offset_x, size=N)
-    rand_ys = np.random.randint(offset_y, high=img_h-offset_y, size=N)
+    rand_xs = np.random.randint(offset_x, high=img_w - offset_x, size=N)
+    rand_ys = np.random.randint(offset_y, high=img_h - offset_y, size=N)
     for (cx, cy) in zip(rand_xs, rand_ys):
         rect = pv3.CenteredRect(cx, cy, crop_size[0], crop_size[1])
         yield rect

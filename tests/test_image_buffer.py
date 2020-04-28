@@ -14,7 +14,12 @@ class TestImageBuffer(unittest.TestCase):
         self.assertTupleEqual(img.size, (320, 240))
 
         # Fill buffer from a list of pv images
-        img_files = [pv3.IMG_SLEEPYCAT, pv3.IMG_DRIVEWAY, pv3.IMG_SLEEPYCAT, pv3.IMG_DRIVEWAY]
+        img_files = [
+            pv3.IMG_SLEEPYCAT,
+            pv3.IMG_DRIVEWAY,
+            pv3.IMG_SLEEPYCAT,
+            pv3.IMG_DRIVEWAY,
+        ]
         img_list = [pv3.Image(x) for x in img_files]  # list of 4 images
 
         ib = pv3.ImageBuffer(N=10)
@@ -34,5 +39,6 @@ class TestImageBuffer(unittest.TestCase):
         # im_img = im.as_image()
         # im_img.save("test.jpg")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

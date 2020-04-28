@@ -14,13 +14,14 @@ class TestAffine(unittest.TestCase):
         self.test_h = h
 
         # center point of test image
-        self.test_cx = w/2.0
-        self.test_cy = h/2.0
+        self.test_cx = w / 2.0
+        self.test_cy = h / 2.0
 
     def test_affine_identity(self):
         print("\nTesting identity affine transform")
-        affine_mat = np.array([[1, 0, 0],
-                               [0, 1, 0]], dtype='float32')  # identity transform
+        affine_mat = np.array(
+            [[1, 0, 0], [0, 1, 0]], dtype="float32"
+        )  # identity transform
         aff = pv3.AffineTransformer(affine_matrix=affine_mat)
         out = aff(self.test_img)
         self.assertTupleEqual(out.size, self.test_img.size)
@@ -29,8 +30,9 @@ class TestAffine(unittest.TestCase):
     def test_affine_translate(self):
         print("\nTesting affine translation")
         # manual method using base class
-        affine_mat = np.array([[1, 0, 200],
-                               [0, 1, 100]], dtype='float32')  # translate +200x, +100y
+        affine_mat = np.array(
+            [[1, 0, 200], [0, 1, 100]], dtype="float32"
+        )  # translate +200x, +100y
         aff = pv3.AffineTransformer(affine_matrix=affine_mat, dest_size=(800, 400))
         out = aff(self.test_img)
 
@@ -52,7 +54,9 @@ class TestAffine(unittest.TestCase):
 
         # use the 'fit' option for the dest_size to ensure nothing gets
         # chopped off at the corners
-        aff = pv3.AffineRotation(theta_degrees=90, image_size=self.test_img.size, dest_size='fit')
+        aff = pv3.AffineRotation(
+            theta_degrees=90, image_size=self.test_img.size, dest_size="fit"
+        )
 
         # rotate forward, 'fit' ensures buffer space for entire image
         out = aff(self.test_img)
@@ -66,7 +70,9 @@ class TestAffine(unittest.TestCase):
 
         # test that a ValueError is raised if we try to apply an inverse transform
         # when using the 'fit' option, but we haven't yet computed a fit (i.e., a forward pass)
-        aff2 = pv3.AffineRotation(theta_degrees=30, image_size=self.test_img.size, dest_size='fit')
+        aff2 = pv3.AffineRotation(
+            theta_degrees=30, image_size=self.test_img.size, dest_size="fit"
+        )
         self.assertRaises(ValueError, aff2, self.test_img, invert=True)
 
     def test_affine_invert(self):
@@ -85,5 +91,5 @@ class TestAffine(unittest.TestCase):
         self.assertTrue(np.allclose(block_1, block_2))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

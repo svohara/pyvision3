@@ -39,16 +39,20 @@ def demo():
     # Labels for the montage are the upper left corner of the cropped area
     neg_crops = pv3.crop_negative_regions(img, [p_cat], (150, 150), N=10)
     nc_labels = [str(c.metadata["crop_bounds"][0:2]) for c in neg_crops]
-    montage3 = pv3.ImageMontage(neg_crops, layout=(2, 5), tile_size=(150, 150), labels=nc_labels)
+    montage3 = pv3.ImageMontage(
+        neg_crops, layout=(2, 5), tile_size=(150, 150), labels=nc_labels
+    )
     mnt_image_negs = montage3.as_image()
 
     mnt_image.show(window_title="Crops from bounding boxes", delay=1, pos=(10, 10))
-    mnt_image2.show(window_title="Crops from centroids and fixed size", delay=1, pos=(10, 200))
+    mnt_image2.show(
+        window_title="Crops from centroids and fixed size", delay=1, pos=(10, 200)
+    )
     mnt_image_negs.show(window_title="Random background crops", delay=0, pos=(10, 400))
     img.imshow(window_title="Source image and regions")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("=================================================================")
     print("Demonstrating extracting crops from a source image")
     print("Focus on either montage image, and hit any key to exit.")

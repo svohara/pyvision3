@@ -36,6 +36,7 @@ class VideoInterface(object):
     the pyvision3 Video interface, and implements the common pause-and-play
     feature of Videos.
     """
+
     def __init__(self, size=None):
         self.current_frame_num = 0
         self.current_frame = None
@@ -119,10 +120,12 @@ class VideoInterface(object):
         """
         self.reset()
         print("Saving video to: {}".format(out_file))
-        vid_out = cv2.VideoWriter(filename=out_file,
-                                  fourcc=cv2.VideoWriter_fourcc(*four_cc),
-                                  fps=fps,
-                                  frameSize=out_size)
+        vid_out = cv2.VideoWriter(
+            filename=out_file,
+            fourcc=cv2.VideoWriter_fourcc(*four_cc),
+            fps=fps,
+            frameSize=out_size,
+        )
 
         for frame in self:
             if frame.size != out_size:
@@ -134,9 +137,18 @@ class VideoInterface(object):
         self.reset()
         print("Completed.")
 
-    def play(self, window_title="Pyvision Video", pos=None, delay=20,
-             annotate=True, image_buffer=None, start_frame=None, end_frame=None,
-             on_new_frame=None, **kwargs):
+    def play(
+        self,
+        window_title="Pyvision Video",
+        pos=None,
+        delay=20,
+        annotate=True,
+        image_buffer=None,
+        start_frame=None,
+        end_frame=None,
+        on_new_frame=None,
+        **kwargs
+    ):
         """
         Plays the video, calling the on_new_frame function after loading each
          frame from the video. The user may interrupt video playback by
@@ -191,10 +203,10 @@ class VideoInterface(object):
         playback using the 'q'uit option.
         """
         if delay == 0:
-            delay_obj = {'wait_time': 20, 'current_state': 'PAUSED'}
+            delay_obj = {"wait_time": 20, "current_state": "PAUSED"}
         else:
-            delay_obj = {'wait_time': delay, 'current_state': 'PLAYING'}
-        key = ''
+            delay_obj = {"wait_time": delay, "current_state": "PLAYING"}
+        key = ""
 
         if start_frame is not None:
             self.seek_to(start_frame)
@@ -209,18 +221,35 @@ class VideoInterface(object):
 
             if annotate:
                 txt = "Frame: {}".format(self.current_frame_num)
-                img.annotate_text(txt, (10, 10), color=(255, 255, 255), bg_color=(0, 0, 0),
-                                  font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1)
+                img.annotate_text(
+                    txt,
+                    (10, 10),
+                    color=(255, 255, 255),
+                    bg_color=(0, 0, 0),
+                    font_face=cv2.FONT_HERSHEY_PLAIN,
+                    font_scale=1,
+                )
 
             if window_title is not None:
-                img.show(window_title=window_title, highgui=True, pos=pos, delay=None, annotations_opacity=1.0)
+                img.show(
+                    window_title=window_title,
+                    highgui=True,
+                    pos=pos,
+                    delay=None,
+                    annotations_opacity=1.0,
+                )
 
             if on_new_frame is not None:
-                on_new_frame(img, self.current_frame_num, key=key,
-                             image_buffer=image_buffer, **kwargs)
+                on_new_frame(
+                    img,
+                    self.current_frame_num,
+                    key=key,
+                    image_buffer=image_buffer,
+                    **kwargs
+                )
 
             key = self._pause_and_play(delay_obj)
-            if key == 'q':
+            if key == "q":
                 break  # user selected quit playback
 
         if window_title:
@@ -228,7 +257,7 @@ class VideoInterface(object):
 
         return self.current_frame_num
 
-    def _pause_and_play(self, delay_obj={'wait_time': 20, 'current_state': 'PLAYING'}):
+    def _pause_and_play(self, delay_obj={"wait_time": 20, "current_state": "PLAYING"}):
         """
         This function is intended to be used in the play back loop of a video.
         It allows the user to interrupt the play back to pause the video, to
@@ -241,8 +270,8 @@ class VideoInterface(object):
         NOTE: We are intentionally using a mutable default argument in this
         function.
         """
-        state = delay_obj['current_state']
-        wait = delay_obj['wait_time']
+        state = delay_obj["current_state"]
+        wait = delay_obj["wait_time"]
         # print state, wait
 
         menu_str = "Select <a>bort program, <q>uit playback, <c>ontinue playback,"
@@ -259,23 +288,23 @@ class VideoInterface(object):
         # recognized by the cv.WaitKey() within the short time limit. So
         # we need to 'soak up' these extra inputs when the user is still
         # holding the space bar, but we've gotten into the pause state.
-        while c == ord(' '):
+        while c == ord(" "):
             print("PAUSED: {}".format(menu_str))
             c = cv2.waitKey(0)
             c &= 127  # bit mask to get only lower 8 bits
 
         # At this point, we have a non-spacebar input, so process it.
-        if c == ord('a'):  # abort
+        if c == ord("a"):  # abort
             print("User Aborted Program.")
             raise SystemExit
-        elif c == ord('q'):  # quit video playback
-            return 'q'
-        elif c == ord('c'):  # continue video playback
-            delay_obj['current_state'] = "PLAYING"
-            return 'c'
-        elif c == ord('s'):  # step to next frame, keep in paused state
-            delay_obj['current_state'] = "PAUSED"
-            return 's'
+        elif c == ord("q"):  # quit video playback
+            return "q"
+        elif c == ord("c"):  # continue video playback
+            delay_obj["current_state"] = "PLAYING"
+            return "c"
+        elif c == ord("s"):  # step to next frame, keep in paused state
+            delay_obj["current_state"] = "PAUSED"
+            return "s"
         else:  # any other keyboard input is just returned
             # delay_obj['current_state'] = "PAUSED"
             return chr(c)
@@ -347,7 +376,9 @@ class Video(VideoInterface):
         else:
             if self.current_frame_num == 0:
                 # something is wrong with the video source
-                raise ValueError("Error: Video source can't be read. VideoCapture retrieve failed.")
+                raise ValueError(
+                    "Error: Video source can't be read. VideoCapture retrieve failed."
+                )
             else:
                 raise StopIteration
 
@@ -359,6 +390,7 @@ class VideoFromFileList(VideoInterface):
     Given a sorted list of filenames (including full path), this will
     treat the list as a video sequence.
     """
+
     def __init__(self, filelist, size=None):
         """
         Parameters
@@ -402,6 +434,7 @@ class VideoFromDir(VideoFromFileList):
     Consider the sorted files in a given directory as a video.
     This is a convenience class that uses VideoFromFileList
     """
+
     def __init__(self, directory, pattern="*", size=None):
         """
 
@@ -427,6 +460,7 @@ class VideoFromImageStack(VideoInterface):
     This class allows the user to treat a stack of grayscale images in a 3D numpy array as a video.
     We assume that the dimensions of the array are ordered as (frame #, width, height)
     """
+
     def __init__(self, image_stack, size=None):
         """
         Parameters

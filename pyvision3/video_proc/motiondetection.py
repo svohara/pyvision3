@@ -6,8 +6,12 @@ Modified: Mar 11, 2016
 """
 
 import pyvision3 as pv3
-from pyvision3 import BG_SUBTRACT_STATIC, BG_SUBTRACT_FRAME_DIFF, \
-    BG_SUBTRACT_MEDIAN, BG_SUBTRACT_APPROX_MEDIAN
+from pyvision3 import (
+    BG_SUBTRACT_STATIC,
+    BG_SUBTRACT_FRAME_DIFF,
+    BG_SUBTRACT_MEDIAN,
+    BG_SUBTRACT_APPROX_MEDIAN,
+)
 
 import cv2
 import numpy as np
@@ -30,8 +34,19 @@ class MotionDetector(object):
     The general process is to update the image buffer and then
     call the MotionDetector's detect() method.
     """
-    def __init__(self, image_buffer=None, thresh=80, method=BG_SUBTRACT_APPROX_MEDIAN, min_area=400,
-                 rect_filter=None, buff_size=5, rect_type=MD_BOUNDING_RECTS, rect_sigma=2.0, **kwargs):
+
+    def __init__(
+        self,
+        image_buffer=None,
+        thresh=80,
+        method=BG_SUBTRACT_APPROX_MEDIAN,
+        min_area=400,
+        rect_filter=None,
+        buff_size=5,
+        rect_type=MD_BOUNDING_RECTS,
+        rect_sigma=2.0,
+        **kwargs
+    ):
         """
         Parameters
         ----------
@@ -57,30 +72,31 @@ class MotionDetector(object):
         Until the image buffer is full, the result of the motion detection will be
           nothing. See documentation on the detect(img) method of this class.
         """
-        self._fgMask = None        
+        self._fgMask = None
         self._minArea = min_area
         self._filter = rect_filter
         self._threshold = thresh
         self._softThreshold = False  # soft_thresh
-        
+
         if image_buffer is None:
             self._image_buffer = pv3.ImageBuffer(N=buff_size)
         else:
             self._image_buffer = image_buffer
-        
-        self._method = method      
-        self._bgSubtract = None  # can't initialize until buffer is full...so done in detect()
+
+        self._method = method
+        self._bgSubtract = (
+            None  # can't initialize until buffer is full...so done in detect()
+        )
         self._contours = []
-        self._annotateImg = None # a pyvision3 image for annotation motion detections
+        self._annotateImg = None  # a pyvision3 image for annotation motion detections
         self._rect_type = rect_type
         self._rect_sigma = rect_sigma
 
         self._kwargs = kwargs  # passed onto background subtractor initialization
-        
+
     def _init_bg_subtract(self):
         kwargs = self._kwargs
-        kwargs = {"thresh": self._threshold,
-                  "soft_thresh": False}
+        kwargs = {"thresh": self._threshold, "soft_thresh": False}
         kwargs.update(self._kwargs)
 
         if self._method == BG_SUBTRACT_FRAME_DIFF:
@@ -95,23 +111,25 @@ class MotionDetector(object):
             self._bgSubtract = pv3.ApproximateMedianModel(self._image_buffer, **kwargs)
         else:
             raise ValueError("Unknown Background Subtraction Method specified.")
-                  
+
     def _compute_contours(self):
         mask_array = self._fgMask.as_grayscale(as_type="CV")
-        _, contours, _ = cv2.findContours(mask_array, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        _, contours, _ = cv2.findContours(
+            mask_array, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE
+        )
         self._contours = contours
-            
+
     def _compute_convex_hulls(self):
         hulls = []
         for contour in self._contours:
             hull = cv2.convexHull(contour, returnPoints=True)
             hulls.append(hull)
         self._convexHulls = hulls
-        
+
     def __call__(self, img, **kwargs):
         self.detect(img, **kwargs)
         return self.get_rects()
-            
+
     def detect(self, img, convex_hulls=False):
         """
         You call this method to update detection results, given the new
@@ -151,7 +169,7 @@ class MotionDetector(object):
         self._image_buffer.add(img)
         if not self._image_buffer.is_full():
             return -1
-        
+
         # initialize background subtraction object only after buffer is full.
         if self._bgSubtract is None:
             self._init_bg_subtract()
@@ -196,7 +214,7 @@ class MotionDetector(object):
         methods (notably N-Frame Differencer) use the middle frame of the buffer.
         """
         return self._annotateImg  # computed already by the detect() method
-    
+
     def foreground_mask(self):
         """
         Returns
@@ -207,7 +225,7 @@ class MotionDetector(object):
         get the updated mask.
         """
         return self._fgMask
-    
+
     def foreground_pixels(self, bg_color=None):
         """
         Parameters
@@ -228,13 +246,13 @@ class MotionDetector(object):
         """
         if self._fgMask is None:
             return None
-        
+
         # binary mask selecting foreground regions
         mask = self._fgMask.as_grayscale(as_type="CV")
-        
+
         # full color source image
         image = self._annotateImg.data
-        
+
         # dest image, full color, but initially all zeros (black/background)
         # we will copy the foreground areas from image to here.
         dest = image.copy()
@@ -298,7 +316,7 @@ class MotionDetector(object):
         elif self._rect_type == MD_STANDARDIZED_RECTS:
             return self.standardized_rects()
         else:
-            raise ValueError("Unknown rect type: "+self._rect_type)
+            raise ValueError("Unknown rect type: " + self._rect_type)
 
     def bounding_rects(self):
         """
@@ -311,14 +329,17 @@ class MotionDetector(object):
         You must call detect() before bounding_rects() to see updated results.
         """
         # create a list of the top-level contours found in the contours structure
-        rects = [pv3.Rect(*cv2.boundingRect(c)) for c in self._contours
-                 if cv2.contourArea(c) > self._minArea]
+        rects = [
+            pv3.Rect(*cv2.boundingRect(c))
+            for c in self._contours
+            if cv2.contourArea(c) > self._minArea
+        ]
 
         if self._filter is not None:
             rects = self._filter(rects)
-        
+
         return rects
-    
+
     def standardized_rects(self):
         """
         Returns
@@ -339,18 +360,18 @@ class MotionDetector(object):
                 m10 = moments["m10"]
                 mu02 = moments["mu02"]
                 mu20 = moments["mu20"]
-                cx = m10/m00
-                cy = m01/m00
-                w = 2.0*self._rect_sigma*np.sqrt(mu20/m00)
-                h = 2.0*self._rect_sigma*np.sqrt(mu02/m00)
+                cx = m10 / m00
+                cy = m01 / m00
+                w = 2.0 * self._rect_sigma * np.sqrt(mu20 / m00)
+                h = 2.0 * self._rect_sigma * np.sqrt(mu02 / m00)
                 r = pv3.CenteredRect(cx, cy, w, h)
                 rects.append(r)
-        
+
         if self._filter is not None:
             rects = self._filter(rects)
-        
+
         return rects
-    
+
     def polygons(self, return_all=False):
         """
         Parameters
@@ -378,7 +399,7 @@ class MotionDetector(object):
                 polys.append(poly)
 
         return polys
-    
+
     def convex_hulls(self):
         """
         Returns
@@ -390,14 +411,20 @@ class MotionDetector(object):
         -----
         You must call detect() before convex_hulls() to see updated results.
         """
-        hull_polys = [sg.Polygon(hull.squeeze()) for hull in self._convexHulls
-                      if len(hull.squeeze()) > 3]
+        hull_polys = [
+            sg.Polygon(hull.squeeze())
+            for hull in self._convexHulls
+            if len(hull.squeeze()) > 3
+        ]
         return hull_polys
-        
-    def annotate_frame(self, key_frame=None,
-                       rect_color=pv3.RGB_RED,
-                       contour_color=pv3.RGB_BLACK,
-                       convex_hull_color=pv3.RGB_CYAN):
+
+    def annotate_frame(
+        self,
+        key_frame=None,
+        rect_color=pv3.RGB_RED,
+        contour_color=pv3.RGB_BLACK,
+        convex_hull_color=pv3.RGB_CYAN,
+    ):
         """
         Draws detection results on an image (key_frame) specified by the user. Specify
         None as the color for any aspect you wish not drawn.
@@ -441,7 +468,7 @@ class MotionDetector(object):
                 key_frame.annotate_shape(poly, color=convex_hull_color, thickness=1)
 
         # TODO: Update this after porting OpticFlow and MCFD code to pyvision3 3
-        #if (flow_color is not None) and (self._method == pv.BG_SUBTRACT_MCFD):
+        # if (flow_color is not None) and (self._method == pv.BG_SUBTRACT_MCFD):
         #    flow = self._bgSubtract.getOpticalFlow()
         #    flow.annotate_frame(key_frame, type="TRACKING", color=flow_color)
 
