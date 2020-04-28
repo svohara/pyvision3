@@ -14,6 +14,7 @@ class AffineTransformer(object):
     This class defines a callable object that can be applied to
     pyvision3 images to apply an affine or inverse affine transformation.
     """
+
     def __init__(self, affine_matrix, dest_size=None):
         """
         Constructor
@@ -93,7 +94,7 @@ class AffineTransformer(object):
         input_array = source_img.data
         if self.dest_size is None:
             dest_size = source_img.size
-        elif self.dest_size == 'fit':
+        elif self.dest_size == "fit":
             dest_size = self._get_fit(source_img.size, invert=invert)
         else:
             dest_size = self.dest_size
@@ -143,6 +144,7 @@ class AffineTranslate(AffineTransformer):
     Convenience subclass of AffineTransformer for performing simple
     translation by dx, dy.
     """
+
     def __init__(self, dx, dy, **kwargs):
         """
         Parameters
@@ -150,8 +152,7 @@ class AffineTranslate(AffineTransformer):
         dx: int or float
         dy: int or float
         """
-        translate_mat = np.array([[1, 0, dx],
-                                  [0, 1, dy]], dtype='float32')
+        translate_mat = np.array([[1, 0, dx], [0, 1, dy]], dtype="float32")
         AffineTransformer.__init__(self, translate_mat, **kwargs)
 
 
@@ -164,6 +165,7 @@ class AffineRotation(AffineTransformer):
     Note, for 90, 180, 270 rotations, it would be much faster
     to apply matrix flipping and transposing.
     """
+
     def __init__(self, theta_degrees, image_size, **kwargs):
         """
         Constructor
@@ -178,28 +180,24 @@ class AffineRotation(AffineTransformer):
             to rotate about the center
         """
         self.theta_degrees = theta_degrees
-        self.theta = float(theta_degrees)*math.pi/180.0
+        self.theta = float(theta_degrees) * math.pi / 180.0
         self.image_size = image_size
-        self.center = tuple(np.array(image_size, dtype='float32')/2)
+        self.center = tuple(np.array(image_size, dtype="float32") / 2)
 
         cos_t = math.cos(self.theta)
         sin_t = math.sin(self.theta)
 
-        origin_rotation = np.array([[cos_t, -sin_t, 0],
-                                    [sin_t, cos_t, 0],
-                                    [0, 0, 1]])
+        origin_rotation = np.array([[cos_t, -sin_t, 0], [sin_t, cos_t, 0], [0, 0, 1]])
 
         # we are rotating about the center, so we
         # first translate the center to the origin,
         # then apply the origin rotation
         # then translate the origin back to the original
         # image center
-        trans_1 = np.array([[1, 0, -self.center[1]],
-                            [0, 1, -self.center[0]],
-                            [0, 0, 1]])
-        trans_2 = np.array([[1, 0, self.center[1]],
-                            [0, 1, self.center[0]],
-                            [0, 0, 1]])
+        trans_1 = np.array(
+            [[1, 0, -self.center[1]], [0, 1, -self.center[0]], [0, 0, 1]]
+        )
+        trans_2 = np.array([[1, 0, self.center[1]], [0, 1, self.center[0]], [0, 0, 1]])
         mat = np.dot(trans_2, np.dot(origin_rotation, trans_1))
         mat = mat[0:2, :]  # drop the augmented row
 

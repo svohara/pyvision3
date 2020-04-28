@@ -44,7 +44,7 @@ def Rect(x, y, w, h):
     -------
     shapely.geometry.Polygon object representing the rectangle
     """
-    return sg.box(x, y, x+w-1, h+y-1)
+    return sg.box(x, y, x + w - 1, h + y - 1)
 
 
 def CenteredRect(cx, cy, w, h):
@@ -63,8 +63,8 @@ def CenteredRect(cx, cy, w, h):
     -------
     shapely shape (polygon) object
     """
-    x = cx - w//2
-    y = cy - h//2
+    x = cx - w // 2
+    y = cy - h // 2
     return Rect(x, y, w, h)
 
 
@@ -102,7 +102,7 @@ def integer_coords_array(shape):
         coords = shape.exterior.coords
     except AttributeError:
         coords = shape.coords
-    return np.array(coords).astype('int')
+    return np.array(coords).astype("int")
 
 
 def integer_bounds(shape):
@@ -117,4 +117,4 @@ def integer_bounds(shape):
     -------
     (minx, miny, maxx, maxy) as integer values.
     """
-    return tuple(np.array(shape.bounds, dtype='int'))
+    return tuple(np.array(shape.bounds, dtype="int"))

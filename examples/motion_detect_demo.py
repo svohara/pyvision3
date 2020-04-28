@@ -10,8 +10,12 @@ def each_frame(cur_frame, frame_num, key=None, image_buffer=None, motion=None):
     out = motion.annotate_frame(convex_hull_color=None)
     fg = motion.foreground_pixels()
     if (out is not None) and (fg is not None):
-        montage = pv3.ImageMontage([out, fg], layout=(1, 2), tile_size=(320, 240),
-                                   labels=['Annotation', 'Foreground Pix'])
+        montage = pv3.ImageMontage(
+            [out, fg],
+            layout=(1, 2),
+            tile_size=(320, 240),
+            labels=["Annotation", "Foreground Pix"],
+        )
         out_img = montage.as_image()
         out_img.show(window_title="Motion Detection", delay=1)
 
@@ -27,7 +31,9 @@ def md_factory_static(vid):
 
 
 def md_factory_approx_median():
-    md = pv3.MotionDetector(method=pv3.BG_SUBTRACT_APPROX_MEDIAN, buff_size=60, thresh=80)
+    md = pv3.MotionDetector(
+        method=pv3.BG_SUBTRACT_APPROX_MEDIAN, buff_size=60, thresh=80
+    )
     return md
 
 
@@ -50,10 +56,15 @@ def demo():
     # md = md_factory_n_frame_diff()
     # md = md_factory_median()
 
-    vid.play(window_title=None, annotate=False,
-             start_frame=100, end_frame=1000,
-             on_new_frame=each_frame, motion=md)
+    vid.play(
+        window_title=None,
+        annotate=False,
+        start_frame=100,
+        end_frame=1000,
+        on_new_frame=each_frame,
+        motion=md,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     demo()

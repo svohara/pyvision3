@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 import os
 import json
 
-with open(os.path.join('pyvision3', 'data', 'project_info.json'), 'r') as infile:
+with open(os.path.join("pyvision3", "data", "project_info.json"), "r") as infile:
     _info = json.load(infile)
 
 _version = ".".join([str(x) for x in _info["version_tuple"]])
@@ -19,7 +19,7 @@ setup(
     package_data={
         # include all files found in the 'data' subdirectory
         # of the 'pyvision3' package
-        'pyvision3': ['data/*']
+        "pyvision3": ["data/*"]
     },
     test_suite="tests",
     download_url="{}/archive/{}.tar.gz".format(_info["url"], _version),
@@ -29,26 +29,23 @@ setup(
         #   3 - Alpha
         #   4 - Beta
         #   5 - Production/Stable
-        'Development Status :: 4 - Beta',
-
+        "Development Status :: 4 - Beta",
         # Indicate who your project is intended for
-        'Intended Audience :: Developers',
-
+        "Intended Audience :: Developers",
         # Pick your license as you wish (should match "license" above)
-        'License :: OSI Approved :: MIT License',
-
+        "License :: OSI Approved :: MIT License",
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 3',
+        "Programming Language :: Python :: 3",
     ],
     install_requires=[
         "matplotlib>=1.3.1",
         "numpy>=1.8.2",
         "pillow>=2.3.0",
         "shapely>=1.3.0",
-        "opencv-python"
+        "opencv-python",
     ],
-    python_requires='>=3.6',
+    python_requires=">=3.6",
     long_description="""
     A python 3 computer vision library that complements OpenCV 3.x to add many useful features for developers
     and researchers alike. Pyvision provides utilities that help in these core areas: training data preparation,

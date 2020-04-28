@@ -32,5 +32,5 @@ class TestDatasetTools(unittest.TestCase):
         self.assertTupleEqual(crops2[0].size, (300, 300))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

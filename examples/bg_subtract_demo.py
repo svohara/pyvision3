@@ -36,18 +36,16 @@ def demo():
     am_key = ib.last()
 
     # display result side-by-side with key image to which it applies
-    img_list = [fd_key, fd_mask,
-                md_key, md_mask,
-                am_key, am_mask]
-    img_lbls = ["FD: Img", "FD: Mask",
-                "MD: Img", "MD: Mask",
-                "AM: Img", "AM: Mask"]
-    imontage = pv3.ImageMontage(img_list, layout=(3, 2), tile_size=(320, 240),
-                                labels=img_lbls)
+    img_list = [fd_key, fd_mask, md_key, md_mask, am_key, am_mask]
+    img_lbls = ["FD: Img", "FD: Mask", "MD: Img", "MD: Mask", "AM: Img", "AM: Mask"]
+    imontage = pv3.ImageMontage(
+        img_list, layout=(3, 2), tile_size=(320, 240), labels=img_lbls
+    )
     imontage.show(window_title="Background Subtraction", delay=0)
     return bg
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     print("=================================================================")
     print("Focus on montage image, and hit any key to exit.")
     print("=================================================================")

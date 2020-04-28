@@ -21,6 +21,7 @@ class TileSelector(object):
     A tile selector instance provides a user interface for selecting some tiles
     out of a larger set, using an image montage display.
     """
+
     def __init__(self, tile_generator, chunk_size=48, layout=(6, 8), tile_size=None):
         """
         Constructor
@@ -46,7 +47,7 @@ class TileSelector(object):
         the error image (red tile) so that the user can select
         it as a bad tile.
         """
-        red_img = np.zeros((1, 1, 3), dtype='uint8')
+        red_img = np.zeros((1, 1, 3), dtype="uint8")
         red_img[0, 0, :] = (0, 0, 255)  # single pixel, BGR order
         red_img = cv2.resize(red_img, (100, 100))
         return pv3.Image(red_img)
@@ -86,8 +87,13 @@ class TileSelector(object):
             tile_size = self.tile_size
 
         # build the montage and display it
-        imnt = pv3.ImageMontage(tiles, layout=self.layout, tile_size=tile_size,
-                                labels=labels, highlight_selected=True)
+        imnt = pv3.ImageMontage(
+            tiles,
+            layout=self.layout,
+            tile_size=tile_size,
+            labels=labels,
+            highlight_selected=True,
+        )
         win_title = "Tile selector: Page {}".format(page_num)
         imnt.show(window_title=win_title)
         cv2.destroyWindow(win_title)

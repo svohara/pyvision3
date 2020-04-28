@@ -16,7 +16,7 @@ def play_sample_mov():
     vid.play()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("=================================================================")
     print("Webcam video will start paused.")
     print("With focus on video window, use the keyboard to control playback.")

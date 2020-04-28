@@ -38,7 +38,9 @@ class TestImage(unittest.TestCase):
         self.assertTupleEqual(tuple(masked_image[0, 0, :]), tuple(img[0, 0, :]))
 
         # ensure where mask is non-zero, we have a correct alpha blend
-        blended_pix = tuple(np.round(0.5*img[140, 190, :] + 0.5*mask[140, 190, :]).astype('uint8'))
+        blended_pix = tuple(
+            np.round(0.5 * img[140, 190, :] + 0.5 * mask[140, 190, :]).astype("uint8")
+        )
         self.assertTupleEqual(blended_pix, tuple(masked_image[140, 190, :]))
 
     def test_inset(self):
@@ -46,7 +48,9 @@ class TestImage(unittest.TestCase):
         img = pv3.Image(pv3.IMG_DRIVEWAY)
 
         # generate inset image
-        dat = np.ones((50, 50, 3), dtype='uint8')  # (1,1,1) is the transparent color by default
+        dat = np.ones(
+            (50, 50, 3), dtype="uint8"
+        )  # (1,1,1) is the transparent color by default
         cv2.rectangle(dat, (5, 5), (20, 20), (255, 0, 0), thickness=-1)
         cv2.rectangle(dat, (30, 30), (45, 45), (0, 255, 255), thickness=-1)
         inset = pv3.Image(dat)
@@ -56,5 +60,5 @@ class TestImage(unittest.TestCase):
         self.assertTupleEqual(tuple(img.annotation_data[281, 281, :]), (0, 255, 255))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

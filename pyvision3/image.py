@@ -17,6 +17,7 @@ onto the image array itself.
 import cv2
 import numpy as np
 import io
+
 try:
     import matplotlib.pyplot as plot
 except ImportError:
@@ -86,29 +87,34 @@ class Image(object):
 
         if isinstance(source, np.ndarray):
             self.data = source
-            self.metadata['source'] = "np.ndarray"
+            self.metadata["source"] = "np.ndarray"
         elif type(source) == str:
             self.data = cv2.imread(source, *args, **kwargs)
-            self.metadata['source'] = "file"
-            self.metadata['filename'] = source
+            self.metadata["source"] = "file"
+            self.metadata["filename"] = source
         else:
             # assume a file object
             buf = source.read()
-            x = np.fromstring(buf, dtype='uint8')
+            x = np.fromstring(buf, dtype="uint8")
             self.data = cv2.imdecode(x, cv2.IMREAD_UNCHANGED)
-            self.metadata['source'] = "file object or buffer"
+            self.metadata["source"] = "file object or buffer"
 
         self.height, self.width = self.data.shape[0:2]
         self.size = (self.width, self.height)
         self.nchannels = self.data.shape[2] if len(self.data.shape) == 3 else 1
 
         # Annotation data is a separate BGR image array.
-        self.annotation_data = self.data.copy() if self.nchannels == 3 else cv2.cvtColor(self.data, cv2.COLOR_GRAY2BGR)
+        self.annotation_data = (
+            self.data.copy()
+            if self.nchannels == 3
+            else cv2.cvtColor(self.data, cv2.COLOR_GRAY2BGR)
+        )
 
     def __str__(self):
         txt = "Pyvision3 Image: {}".format(self.desc)
-        txt += "\nWidth: {}, Height: {}, Channels: {}, Depth: {}".format(self.width, self.height,
-                                                                         self.nchannels, self.data.dtype)
+        txt += "\nWidth: {}, Height: {}, Channels: {}, Depth: {}".format(
+            self.width, self.height, self.nchannels, self.data.dtype
+        )
         return txt
 
     def __repr__(self):
@@ -176,14 +182,18 @@ class Image(object):
         # that were not changed by an annotation will blend back to full intensity.
         # i.e., if there were no annotations on pixel x, (1-alpha)*I(x) + (alpha)*A(x) = I(x)
         # because A(x) == I(x) where not otherwise annotated.
-        tmp_img = cv2.addWeighted(tmp_img, 1.0-alpha, self.annotation_data, alpha, 0.0)
+        tmp_img = cv2.addWeighted(
+            tmp_img, 1.0 - alpha, self.annotation_data, alpha, 0.0
+        )
 
         if as_type == "PV":
             return Image(tmp_img)
 
         return tmp_img
 
-    def annotate_shape(self, shape, color=(255, 0, 0), fill_color=None, *args, **kwargs):
+    def annotate_shape(
+        self, shape, color=(255, 0, 0), fill_color=None, *args, **kwargs
+    ):
         """
         Draws the specified shape on the annotation data layer.
         Currently supports LineString, MultiLineString, LinearRing,
@@ -220,8 +230,8 @@ class Image(object):
             if fill_color is not None:
                 # use cv2.fillPoly
                 c = self._fix_color_tuple(fill_color)
-                exterior = np.array(shape.exterior.coords, dtype='int')
-                interiors = [np.array(x.coords, dtype='int') for x in shape.interiors]
+                exterior = np.array(shape.exterior.coords, dtype="int")
+                interiors = [np.array(x.coords, dtype="int") for x in shape.interiors]
                 cv2.fillPoly(self.annotation_data, [exterior] + interiors, color=c)
             # draw external ring of polygon
             self._draw_segments(shape.exterior, color, *args, **kwargs)
@@ -239,7 +249,11 @@ class Image(object):
         point:  tuple (int: x, int: y) or shapely Point object
         color:  tuple (r,g,b)
         """
-        pt = (int(point.x), int(point.y)) if isinstance(point, sg.point.Point) else tuple(point)
+        pt = (
+            (int(point.x), int(point.y))
+            if isinstance(point, sg.point.Point)
+            else tuple(point)
+        )
         self.annotate_circle(pt, 3, color, thickness=-1)
 
     def annotate_circle(self, ctr, radius, color=(255, 0, 0), *args, **kwargs):
@@ -302,10 +316,21 @@ class Image(object):
         pv3.Rect(...) to create it), then use the annotate_shape method instead.
         """
         c = self._fix_color_tuple(color)
-        cv2.rectangle(self.annotation_data, tuple(pt1), tuple(pt2), color=c, *args, **kwargs)
+        cv2.rectangle(
+            self.annotation_data, tuple(pt1), tuple(pt2), color=c, *args, **kwargs
+        )
 
-    def annotate_text(self, txt, point, color=(0, 0, 0), bg_color=None,
-                      font_face=cv2.FONT_HERSHEY_PLAIN, font_scale=1, *args, **kwargs):
+    def annotate_text(
+        self,
+        txt,
+        point,
+        color=(0, 0, 0),
+        bg_color=None,
+        font_face=cv2.FONT_HERSHEY_PLAIN,
+        font_scale=1,
+        *args,
+        **kwargs
+    ):
         """
         Draws the specified text string to the annotations layer, uses cv2.putText() function
         as the basis, so *args and **kwargs will be passed onto that function.
@@ -337,8 +362,16 @@ class Image(object):
             point2 = (point1[0] + w + 2, point1[1] - h - 2)
             self.annotate_rect(point1, point2, color=bg_color, thickness=-1)
 
-        cv2.putText(self.annotation_data, txt, tuple(point), fontFace=font_face,
-                    fontScale=font_scale, color=c, *args, **kwargs)
+        cv2.putText(
+            self.annotation_data,
+            txt,
+            tuple(point),
+            fontFace=font_face,
+            fontScale=font_scale,
+            color=c,
+            *args,
+            **kwargs
+        )
 
     def annotate_mask(self, mask_img, transparency=(0, 0, 0)):
         """
@@ -402,7 +435,7 @@ class Image(object):
         # copy pixels of tile onto appropriate location in annotation image
         dest = self.annotation_data
         (minx, miny, maxx, maxy) = integer_bounds(roi)
-        dest[miny:(maxy+1), minx:(maxx+1), :] = cv_tile_bgr
+        dest[miny : (maxy + 1), minx : (maxx + 1), :] = cv_tile_bgr
 
     def _draw_segments(self, simple_shape, color, *args, **kwargs):
         """
@@ -473,9 +506,11 @@ class Image(object):
         partially or fully outside the bounds of the image.
         """
         if not in_bounds(rect, self):
-            raise OutOfBoundsError("Cropping rectangle {} is out of bounds.".format(rect.bounds))
+            raise OutOfBoundsError(
+                "Cropping rectangle {} is out of bounds.".format(rect.bounds)
+            )
         (minx, miny, maxx, maxy) = integer_bounds(rect)
-        cropped = self.data[miny:(maxy+1), minx:(maxx+1)].copy()
+        cropped = self.data[miny : (maxy + 1), minx : (maxx + 1)].copy()
         crop_image = Image(cropped)
         crop_image.metadata = self.metadata.copy()
         crop_image.metadata["crop_bounds"] = (minx, miny, maxx, maxy)
@@ -515,7 +550,7 @@ class Image(object):
             new = np.zeros((new_size[1], new_size[0], self.nchannels), dtype=tmp.dtype)
             x = (new_size[0] - w) // 2
             y = (new_size[1] - h) // 2
-            new[y:(y+h), x:(x+w), :] = tmp
+            new[y : (y + h), x : (x + w), :] = tmp
         else:
             new = cv2.resize(self.data, new_size)
 
@@ -541,8 +576,15 @@ class Image(object):
         kwargs.update({"highgui": False})
         self.show(**kwargs)
 
-    def show(self, window_title=None, highgui=True, annotations=True, annotations_opacity=0.5,
-             delay=0, pos=None):
+    def show(
+        self,
+        window_title=None,
+        highgui=True,
+        annotations=True,
+        annotations_opacity=0.5,
+        delay=0,
+        pos=None,
+    ):
         """
         Displays this image in a highgui or matplotlib window.
 
@@ -574,8 +616,11 @@ class Image(object):
         if not window_title:
             window_title = self.desc
 
-        img_array = self.as_annotated(alpha=annotations_opacity, as_type="CV") if annotations \
+        img_array = (
+            self.as_annotated(alpha=annotations_opacity, as_type="CV")
+            if annotations
             else self.data.copy()
+        )
         # optional resize logic here?
 
         if highgui:
@@ -613,8 +658,13 @@ class Image(object):
         Display only the annotations layer of this image.
         """
         tmp = Image(self.annotation_data)
-        tmp.show(window_title=window_title, highgui=highgui, delay=delay, pos=pos,
-                 annotations=False)
+        tmp.show(
+            window_title=window_title,
+            highgui=highgui,
+            delay=delay,
+            pos=pos,
+            annotations=False,
+        )
 
     def save(self, filename, *args, as_annotated=True, **kwargs):
         """
@@ -648,7 +698,7 @@ def matplot_fig_to_image(fig):
     which can be set upon figure creation.
     """
     buff = io.BytesIO()
-    fig.savefig(buff, format='png', transparent=False, facecolor='white')
+    fig.savefig(buff, format="png", transparent=False, facecolor="white")
     arr = np.asarray(buff.getbuffer())
     img = cv2.imdecode(arr, cv2.IMREAD_COLOR)
     plot.close(fig)
