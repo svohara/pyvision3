@@ -23,8 +23,18 @@ class ImageMontage(object):
     than "viewports" in the layout.
     """
 
-    def __init__(self, image_list, layout=(2, 4), tile_size=(64, 48), gutter=2, by_row=True, labels='index',
-                 keep_aspect=True, highlight_selected=False, alpha=0.5):
+    def __init__(
+        self,
+        image_list,
+        layout=(2, 4),
+        tile_size=(64, 48),
+        gutter=2,
+        by_row=True,
+        labels="index",
+        keep_aspect=True,
+        highlight_selected=False,
+        alpha=0.5,
+    ):
         """
         Constructor
 
@@ -71,7 +81,9 @@ class ImageMontage(object):
         self._image_positions = []
         self._select_handler = None
         self._highlighted = highlight_selected
-        self._selected_tiles = []  # which images have been selected (or clicked) by user
+        self._selected_tiles = (
+            []
+        )  # which images have been selected (or clicked) by user
         self.alpha = alpha
 
         # check if we need to allow for scroll-arrow padding
@@ -91,7 +103,7 @@ class ImageMontage(object):
         img_height = self._rows * (tile_size[1] + gutter) + gutter + 2 * self._ypad
         self._size = (img_width, img_height)
 
-        self._cvMontageImage = np.zeros((img_height, img_width, 3), dtype='uint8')
+        self._cvMontageImage = np.zeros((img_height, img_width, 3), dtype="uint8")
 
         self._init_decrement_arrow()  # build the polygon for the decrement arrow
         self._init_increment_arrow()  # build the polygon for the increment arrow
@@ -122,7 +134,9 @@ class ImageMontage(object):
                 for col in range(self._cols):
                     if img_ptr > len(self._images) - 1:
                         break
-                    tile = self._images[img_ptr].as_annotated(as_type="PV", alpha=self.alpha)
+                    tile = self._images[img_ptr].as_annotated(
+                        as_type="PV", alpha=self.alpha
+                    )
                     self._composite(tile, (row, col), img_ptr)
                     img_ptr += 1
         else:
@@ -130,7 +144,9 @@ class ImageMontage(object):
                 for row in range(self._rows):
                     if img_ptr > len(self._images) - 1:
                         break
-                    tile = self._images[img_ptr].as_annotated(as_type="PV", alpha=self.alpha)
+                    tile = self._images[img_ptr].as_annotated(
+                        as_type="PV", alpha=self.alpha
+                    )
                     self._composite(tile, (row, col), img_ptr)
                     img_ptr += 1
 
@@ -226,8 +242,12 @@ class ImageMontage(object):
                     else:
                         self._selected_tiles.append(imgNum)
                     if self._select_handler is not None:
-                        imgLabel = self._labels[imgNum] if isinstance(self._labels, tuple) else str(imgNum)
-                        self._select_handler(img, imgNum, {"imgLabel":imgLabel})
+                        imgLabel = (
+                            self._labels[imgNum]
+                            if isinstance(self._labels, tuple)
+                            else str(imgNum)
+                        )
+                        self._select_handler(img, imgNum, {"imgLabel": imgLabel})
             return 0
 
     def _init_decrement_arrow(self):
@@ -241,19 +261,27 @@ class ImageMontage(object):
             x1 = self._size[0] / 2
             y1 = 2
             halfpad = self._ypad / 2
-            self._decrArrow = np.array([(x1, y1),
-                                        (x1 + halfpad, self._ypad - 2),
-                                        (x1 - halfpad, self._ypad - 2)],
-                                       dtype="int32")
+            self._decrArrow = np.array(
+                [
+                    (x1, y1),
+                    (x1 + halfpad, self._ypad - 2),
+                    (x1 - halfpad, self._ypad - 2),
+                ],
+                dtype="int32",
+            )
         else:
             # decrement leftwards
             x1 = 2
             y1 = self._size[1] / 2
             halfpad = self._xpad / 2
-            self._decrArrow = np.array([(x1, y1),
-                                        (x1 + self._xpad - 3, y1 - halfpad),
-                                        (x1 + self._xpad - 3, y1 + halfpad)],
-                                       dtype="int32")
+            self._decrArrow = np.array(
+                [
+                    (x1, y1),
+                    (x1 + self._xpad - 3, y1 - halfpad),
+                    (x1 + self._xpad - 3, y1 + halfpad),
+                ],
+                dtype="int32",
+            )
 
     def _init_increment_arrow(self):
         """
@@ -266,19 +294,27 @@ class ImageMontage(object):
             x1 = self._size[0] / 2
             y1 = self._size[1] - 3
             halfpad = self._ypad / 2
-            self._incrArrow = np.array([(x1, y1),
-                                        (x1 + halfpad, y1 - self._ypad + 3),
-                                        (x1 - halfpad, y1 - self._ypad + 3)],
-                                       dtype="int32")
+            self._incrArrow = np.array(
+                [
+                    (x1, y1),
+                    (x1 + halfpad, y1 - self._ypad + 3),
+                    (x1 - halfpad, y1 - self._ypad + 3),
+                ],
+                dtype="int32",
+            )
         else:
             # increment rightwards
             x1 = self._size[0] - 2
             y1 = self._size[1] / 2
             halfpad = self._xpad / 2
-            self._incrArrow = np.array([(x1, y1),
-                                        (x1 - self._xpad + 2, y1 - halfpad),
-                                        (x1 - self._xpad + 2, y1 + halfpad)],
-                                       dtype="int32")
+            self._incrArrow = np.array(
+                [
+                    (x1, y1),
+                    (x1 - self._xpad + 2, y1 - halfpad),
+                    (x1 - self._xpad + 2, y1 + halfpad),
+                ],
+                dtype="int32",
+            )
 
     def _decr(self):
         """
@@ -344,9 +380,9 @@ class ImageMontage(object):
 
         # copy pixels of tile onto appropriate location in montage image
         (minx, miny, maxx, maxy) = integer_bounds(roi)
-        cvImg[miny:(maxy+1), minx:(maxx+1), :] = cvTileBGR
+        cvImg[miny : (maxy + 1), minx : (maxx + 1), :] = cvTileBGR
 
-        if self._labels == 'index':
+        if self._labels == "index":
             # draw image number in lower left corner, respective to ROI
             lbltext = "%d" % img_num
         elif isinstance(self._labels, tuple):
@@ -357,26 +393,38 @@ class ImageMontage(object):
         if lbltext is not None:
             ((tw, th), _) = cv2.getTextSize(lbltext, cv2.FONT_HERSHEY_SIMPLEX, 0.5, 1)
             if tw > 0 and th > 0:
-                cv2.rectangle(cvImg,
-                              (pos_x, pos_y + self._tileSize[1] - 1),
-                              (pos_x + tw + 1, pos_y + self._tileSize[1] - (th + 1) - self._gutter),
-                              color=(0, 0, 0),
-                              thickness=cv2.FILLED)
+                cv2.rectangle(
+                    cvImg,
+                    (pos_x, pos_y + self._tileSize[1] - 1),
+                    (
+                        pos_x + tw + 1,
+                        pos_y + self._tileSize[1] - (th + 1) - self._gutter,
+                    ),
+                    color=(0, 0, 0),
+                    thickness=cv2.FILLED,
+                )
                 color = self._txtcolor
-                cv2.putText(cvImg,
-                            lbltext,
-                            (pos_x + 1, pos_y + self._tileSize[1] - self._gutter - 2),  # location
-                            cv2.FONT_HERSHEY_SIMPLEX,  # font face
-                            0.5,  # font scale
-                            color)
+                cv2.putText(
+                    cvImg,
+                    lbltext,
+                    (
+                        pos_x + 1,
+                        pos_y + self._tileSize[1] - self._gutter - 2,
+                    ),  # location
+                    cv2.FONT_HERSHEY_SIMPLEX,  # font face
+                    0.5,  # font scale
+                    color,
+                )
 
         if self._highlighted and (img_num in self._selected_tiles):
             # draw a highlight around this image
-            cv2.rectangle(cvImg,
-                          (int(minx), int(miny)),
-                          (int(maxx), int(maxy)),
-                          (0, 255, 255),
-                          thickness=4)
+            cv2.rectangle(
+                cvImg,
+                (int(minx), int(miny)),
+                (int(maxx), int(maxy)),
+                (0, 255, 255),
+                thickness=4,
+            )
 
 
 class ClickHandler(object):
@@ -397,7 +445,9 @@ class ClickHandler(object):
         Increment or Decrement the set of images shown in the montage
         if appropriate.
         """
-        montage = self.montage_ptr()  # use weak reference to image montage to prevent mem leak
+        montage = (
+            self.montage_ptr()
+        )  # use weak reference to image montage to prevent mem leak
         if montage is None:
             # if the reference was deleted already...
             return
@@ -408,10 +458,12 @@ class ClickHandler(object):
             if rc == -1 and montage._imgPtr > 0:
                 # user clicked in the decrement region
                 montage._decr()
-            elif rc == 1 and montage._imgPtr < (len(montage._images) - (montage._rows * montage._cols)):
+            elif rc == 1 and montage._imgPtr < (
+                len(montage._images) - (montage._rows * montage._cols)
+            ):
                 montage._incr()
             else:
-                pass # do nothing
+                pass  # do nothing
 
             montage.draw()
             cv2.imshow(window, montage._cvMontageImage)
@@ -446,7 +498,9 @@ class VideoMontage(VideoInterface):
         """
         super().__init__(size=None)
         if len(video_dict) < 1:
-            raise ValueError("You must provide at least one video in the video_dict variable.")
+            raise ValueError(
+                "You must provide at least one video in the video_dict variable."
+            )
         self.vids = video_dict
         self.layout = layout
         self.vid_size = tile_size
@@ -488,7 +542,15 @@ class VideoMontage(VideoInterface):
             image_list.append(self.imgs[k])
 
         # create an image montage from the current video frames and advance the frame counter
-        im = ImageMontage(image_list, self.layout, self.vid_size, gutter=2, by_row=True, labels=keys, alpha=self.alpha)
+        im = ImageMontage(
+            image_list,
+            self.layout,
+            self.vid_size,
+            gutter=2,
+            by_row=True,
+            labels=keys,
+            alpha=self.alpha,
+        )
         self.current_frame = im.as_image()
         self.current_frame_num += 1
 
