@@ -36,9 +36,7 @@ Huge thanks to David Bolme for being the originator of Pyvision.
 Many of the ease-of-use and interface ideas from the original Pyvision are carried forward, albeit with new implementations for Pyvision3.
 
 ## Installation
-Install prerequisites that are not pip-installable:
-* python >= 3.4
-* opencv >= 3.0 with bindings for python
+* python >= 3.6
 
 Then install using pip:
 

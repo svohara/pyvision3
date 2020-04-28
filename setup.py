@@ -48,7 +48,7 @@ setup(
         "shapely>=1.3.0",
         "opencv-python"
     ],
-    python_requires='>=3.4',
+    python_requires='>=3.6',
     long_description="""
     A python 3 computer vision library that complements OpenCV 3.x to add many useful features for developers
     and researchers alike. Pyvision provides utilities that help in these core areas: training data preparation,
